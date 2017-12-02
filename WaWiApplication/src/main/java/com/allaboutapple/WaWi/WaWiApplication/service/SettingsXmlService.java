@@ -2,6 +2,10 @@ package com.allaboutapple.WaWi.WaWiApplication.service;
 
 import com.allaboutapple.WaWi.WaWiApplication.model.Settings;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.*;
@@ -13,8 +17,7 @@ public class SettingsXmlService {
         return OBJ;
     }
 
-    public void write(Settings f, String filename) throws Exception{
-
+    public void write(Settings f, String filename) throws Exception {
         XMLEncoder encoder =
                 new XMLEncoder(
                         new BufferedOutputStream(
@@ -30,5 +33,6 @@ public class SettingsXmlService {
         Settings o = (Settings)decoder.readObject();
         decoder.close();
         return o;
+
     }
 }
