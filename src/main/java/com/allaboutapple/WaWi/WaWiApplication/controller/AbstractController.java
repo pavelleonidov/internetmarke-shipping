@@ -13,7 +13,7 @@ public class AbstractController {
 
     protected void loadView(String fxmlPath) {
         FXMLLoader loader = new FXMLLoader();
-        loader.setLocation(getClass().getResource("/fxml/settings.fxml"));
+        loader.setLocation(getClass().getResource(fxmlPath));
 
         try {
             loader.load();

@@ -21,6 +21,9 @@ public class ProdWSSalesProductService extends ProdWSProductService<SalesProduct
     }
 
     public SalesProductList getProducts() {
+
+
+
         return getObject();
     }
 

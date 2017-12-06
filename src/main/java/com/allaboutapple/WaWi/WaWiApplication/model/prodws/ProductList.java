@@ -1,16 +1,17 @@
 package com.allaboutapple.WaWi.WaWiApplication.model.prodws;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@XmlTransient
 @XmlRootElement(name = "products")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class ProductList<T> {
-    @XmlElement(name = "product")
+abstract public class ProductList<T> {
+    @XmlElements({
+        @XmlElement(name = "salesproduct", type = SalesProduct.class),
+        @XmlElement(name = "basicproduct", type = BasicProduct.class)
+    })
     protected List<T> products = null;
 
     public List<T> getProducts() {

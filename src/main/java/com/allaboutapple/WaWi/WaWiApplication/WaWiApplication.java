@@ -1,9 +1,10 @@
 package com.allaboutapple.WaWi.WaWiApplication;
 
+import com.allaboutapple.WaWi.WaWiApplication.model.prodws.SalesProductList;
+import com.allaboutapple.WaWi.WaWiApplication.service.ProdWSSalesProductService;
 import com.allaboutapple.WaWi.WaWiApplication.view.MainView;
 import de.felixroske.jfxsupport.AbstractJavaFxApplicationSupport;
 import org.apache.commons.io.FileUtils;
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.io.File;
@@ -25,8 +26,12 @@ public class WaWiApplication extends AbstractJavaFxApplicationSupport {
 			}
 
 		}
+
+
+
+
 		//SpringApplication.run(WaWiApplication.class, args);
-		launchApp(WaWiApplication.class, MainView.class, args);
+		launch(WaWiApplication.class, MainView.class, args);
 	}
 
 	public static String getHomeDirectory() {

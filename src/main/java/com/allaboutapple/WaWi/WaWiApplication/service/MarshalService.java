@@ -29,7 +29,8 @@ abstract public class MarshalService<T> {
         Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
 
         //We had written this file in marshalling example
-        return (T) jaxbUnmarshaller.unmarshal( new File(fileName));
+        T result = (T) jaxbUnmarshaller.unmarshal( new File(fileName));
+        return result;
 
     }
 

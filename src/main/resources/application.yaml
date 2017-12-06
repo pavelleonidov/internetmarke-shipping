@@ -1,0 +1,8 @@
+spring:
+    jmx: 
+        enabled: false
+        
+javafx:
+    title: All about Apple
+    stage:
+        resizable: true

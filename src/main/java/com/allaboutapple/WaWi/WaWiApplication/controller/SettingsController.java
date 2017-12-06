@@ -11,18 +11,27 @@ import com.allaboutapple.WaWi.WaWiApplication.model.prodws.types.ExtendedIdentif
 import com.allaboutapple.WaWi.WaWiApplication.model.prodws.types.UnitPriceType;
 import com.allaboutapple.WaWi.WaWiApplication.service.ProdWSSalesProductService;
 import com.allaboutapple.WaWi.WaWiApplication.service.SettingsXmlService;
+
+
 import com.allaboutapple.WaWi.WaWiApplication.service.prodws.*;
 
 
 import com.allaboutapple.WaWi.WaWiApplication.utility.handler.soap.WSSecurityHeaderSOAPHandler;
 import com.jfoenix.controls.JFXButton;
+import com.jfoenix.controls.JFXListView;
 import com.jfoenix.controls.JFXPasswordField;
 import com.jfoenix.controls.JFXTextField;
 import de.felixroske.jfxsupport.FXMLController;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
+import javafx.util.Callback;
+import org.springframework.beans.factory.annotation.Autowired;
+
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -88,7 +97,11 @@ public class SettingsController {
     @FXML
     private JFXPasswordField pcfOneClickPassword;
 
+    @FXML
+    private JFXListView<SalesProduct> salesProductListView;
+
     private static Settings settings;
+
 
     @FXML
     void initialize() {
@@ -102,6 +115,28 @@ public class SettingsController {
         prodWSUsername.setText(getSettings().getProdWSUsername());
         pcfOneClickPassword.setText(getSettings().getProdWSPassword());
         pcfOneClickUsername.setText(getSettings().getProdWSUsername());
+
+        SalesProductList productList = ProdWSSalesProductService.getInstance().getProducts();
+
+        ObservableList<SalesProduct> observableList = FXCollections.observableList(productList.getProducts());
+        salesProductListView.setItems(observableList);
+
+        salesProductListView.setCellFactory(new Callback<ListView<SalesProduct>, ListCell<SalesProduct>>() {
+            @Override
+            public ListCell<SalesProduct> call(ListView<SalesProduct> salesProductListView) {
+                ListCell<SalesProduct> cell = new ListCell<SalesProduct>() {
+                    @Override
+                    protected void updateItem(SalesProduct t, boolean bln) {
+                        super.updateItem(t, bln);
+                        if(t != null) {
+                            setText(t.getName());
+                        }
+                    }
+                };
+
+                return cell;
+            }
+        });
 
 
         // curl -X GET "http://allabout-apple.dev/rest/default/V1/orders?searchCriteria%5Bfilter_groups%5D%5B0%5D%5Bfilters%5D%5B0%5D%5Bcondition_type%5D=eq&searchCriteria%5Bfilter_groups%5D%5B0%5D%5Bfilters%5D%5B0%5D%5Bfield%5D=status&searchCriteria%5BsortOrders%5D%5B0%5D%5Bfield%5D=created_at&searchCriteria%5BsortOrders%5D%5B0%5D%5Bdirection%5D=desc&searchCriteria%5Bfilter_groups%5D%5B0%5D%5Bfilters%5D%5B0%5D%5Bvalue%5D=processing" -H "Authorization: Bearer et7rnl0tu234ma3aw2idu9vg725wuhm9"
@@ -122,13 +157,11 @@ public class SettingsController {
             }
         });
 
-        prodWSFetchProductData.setOnAction(event -> {
-            fillSettingsModel();
+    }
 
-            ProdWSSalesProductService.getInstance().saveProducts();
-
-        });
-
+    public void triggerSaveProducts(final Event e) {
+        fillSettingsModel();
+        ProdWSSalesProductService.getInstance().saveProducts();
     }
 
     private void fillSettingsModel() {
@@ -163,41 +196,7 @@ public class SettingsController {
         }
     }
 
-    public class SOAPMessageWriterHandler implements SOAPHandler<SOAPMessageContext> {
 
-        public boolean handleMessage(SOAPMessageContext smc) {
-
-            Boolean outboundProperty = (Boolean) smc.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY);
-
-            SOAPMessage message = smc.getMessage();
-
-            try {
-                if (!outboundProperty.booleanValue()) {
-                    System.out.println("SOAP Response : ");
-                    message.writeTo(System.out);
-                } else {
-                    System.out.println("SOAP Request : ");
-                    message.writeTo(System.out);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return outboundProperty;
-        }
-
-        public Set getHeaders() {
-            return null;
-        }
-
-        public boolean handleFault(SOAPMessageContext context) {
-            return true;
-        }
-
-        public void close(MessageContext context) {
-        }
-
-
-    }
 
 
 }

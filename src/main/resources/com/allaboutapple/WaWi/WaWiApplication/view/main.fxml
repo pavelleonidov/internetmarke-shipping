@@ -13,7 +13,7 @@
         <menus>
           <Menu mnemonicParsing="false" text="Datei">
             <items>
-                  <MenuItem fx:id="settingsButton" mnemonicParsing="false" text="Einstellungen" />
+                  <MenuItem fx:id="settingsButton" mnemonicParsing="false" onAction="#showToolWindow" text="Einstellungen" />
               <MenuItem mnemonicParsing="false" text="Close" />
             </items>
           </Menu>

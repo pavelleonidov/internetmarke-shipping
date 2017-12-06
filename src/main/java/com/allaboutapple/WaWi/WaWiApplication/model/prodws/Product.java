@@ -3,10 +3,7 @@ package com.allaboutapple.WaWi.WaWiApplication.model.prodws;
 import com.allaboutapple.WaWi.WaWiApplication.model.prodws.types.*;
 import com.allaboutapple.WaWi.WaWiApplication.model.prodws.list.*;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.*;
 import java.math.BigDecimal;
 
 @XmlRootElement(name = "product")
