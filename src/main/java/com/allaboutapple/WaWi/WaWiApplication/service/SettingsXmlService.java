@@ -1,5 +1,6 @@
 package com.allaboutapple.WaWi.WaWiApplication.service;
 
+import com.allaboutapple.WaWi.WaWiApplication.WaWiApplication;
 import com.allaboutapple.WaWi.WaWiApplication.model.Settings;
 
 import javax.xml.bind.JAXBContext;
@@ -10,29 +11,34 @@ import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.*;
 
-public class SettingsXmlService {
+public class SettingsXmlService extends MarshalService<Settings> {
     private static final SettingsXmlService OBJ = new SettingsXmlService();
 
     public static SettingsXmlService getInstance() {
         return OBJ;
     }
 
-    public void write(Settings f, String filename) throws Exception {
-        XMLEncoder encoder =
-                new XMLEncoder(
-                        new BufferedOutputStream(
-                                new FileOutputStream(filename)));
-        encoder.writeObject(f);
-        encoder.close();
+    public SettingsXmlService() {
+        setFileName(WaWiApplication.getHomeDirectory() + "settings.xml");
     }
 
-    public Settings read(String filename) throws Exception {
-        XMLDecoder decoder =
-                new XMLDecoder(new BufferedInputStream(
-                        new FileInputStream(filename)));
-        Settings o = (Settings)decoder.readObject();
-        decoder.close();
-        return o;
 
+    public void write(Settings f) {
+
+        object = f;
+
+        try {
+            marshal();
+        } catch (JAXBException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public Settings read()  {
+        return getObject();
+    }
+
+    protected Class getObjectClass() {
+        return Settings.class;
     }
 }

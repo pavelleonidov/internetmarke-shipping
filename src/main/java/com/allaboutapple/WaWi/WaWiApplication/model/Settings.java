@@ -16,6 +16,7 @@ public class Settings {
     private String prodWSMandantId;
     private String pcfOneClickUsername;
     private String pcfOneClickPassword;
+    private int currentPrinter;
 
     public String getMagento2ApiUrl() {
         return magento2ApiUrl;
@@ -79,5 +80,13 @@ public class Settings {
 
     public void setPcfOneClickPassword(String pcfOneClickPassword) {
         this.pcfOneClickPassword = pcfOneClickPassword;
+    }
+
+    public int getCurrentPrinter() {
+        return currentPrinter;
+    }
+
+    public void setCurrentPrinter(int currentPrinter) {
+        this.currentPrinter = currentPrinter;
     }
 }
