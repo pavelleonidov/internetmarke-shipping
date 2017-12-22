@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import com.jfoenix.controls.JFXButton?>
+<?import com.jfoenix.controls.JFXListView?>
 <?import com.jfoenix.controls.JFXTreeTableView?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Menu?>
@@ -36,9 +38,9 @@
             </AnchorPane>
           <AnchorPane prefHeight="600.0" prefWidth="337.0" style="-fx-background-color: #FFFFFF;" stylesheets="@style.css">
                <children>
-                  <AnchorPane layoutX="14.0" layoutY="62.0" prefHeight="195.0" prefWidth="309.0" styleClass="detail-anchor" stylesheets="@style.css" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="62.0">
+                  <AnchorPane layoutX="14.0" layoutY="62.0" prefHeight="141.0" prefWidth="309.0" styleClass="detail-anchor" stylesheets="@style.css" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="62.0">
                      <children>
-                        <JFXTreeTableView fx:id="orderDetailsProducts" layoutY="-102.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                        <JFXTreeTableView fx:id="orderDetailsProducts" layoutX="2.0" layoutY="3.0" prefHeight="139.0" prefWidth="306.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="1.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="2.0" />
                      </children>
                   </AnchorPane>
                   <Label layoutX="14.0" layoutY="14.0" prefHeight="22.0" prefWidth="263.0" text="Details">
@@ -47,6 +49,17 @@
                      </font>
                   </Label>
                   <Label layoutX="14.0" layoutY="47.0" text="Artikel:" />
+                  <Label layoutX="14.0" layoutY="208.0" prefHeight="22.0" prefWidth="263.0" text="Produkt auswählen">
+                     <font>
+                        <Font size="16.0" />
+                     </font>
+                  </Label>
+                  <AnchorPane layoutX="13.0" layoutY="242.0" prefHeight="158.0" prefWidth="309.0" AnchorPane.leftAnchor="13.0" AnchorPane.rightAnchor="15.0" AnchorPane.topAnchor="242.0">
+                     <children>
+                        <JFXListView fx:id="prodWSProducts" layoutX="14.0" layoutY="-129.0" prefWidth="308.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                     </children>
+                  </AnchorPane>
+                  <JFXButton fx:id="shipItem" layoutX="14.0" layoutY="430.0" style="-fx-background-color: #dddddd;" text="Internetmarke drucken und versenden" onAction="#triggerPrintAndShipProduct" />
                </children></AnchorPane>
         </items>
       </SplitPane>

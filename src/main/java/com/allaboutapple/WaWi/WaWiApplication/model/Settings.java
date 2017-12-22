@@ -16,6 +16,19 @@ public class Settings {
     private String prodWSMandantId;
     private String pcfOneClickUsername;
     private String pcfOneClickPassword;
+    private String pcfOneClickPartnerId;
+    private String pcfOneClickPartnerSignature;
+
+    private String senderCompany;
+    private String senderForename;
+    private String senderSurname;
+    private String senderHouseNumber;
+
+
+    private String senderStreet;
+    private String senderZip;
+    private String senderCity;
+
     private int currentPrinter;
 
     public String getMagento2ApiUrl() {
@@ -89,4 +102,77 @@ public class Settings {
     public void setCurrentPrinter(int currentPrinter) {
         this.currentPrinter = currentPrinter;
     }
+
+    public String getPcfOneClickPartnerId() {
+        return pcfOneClickPartnerId;
+    }
+
+    public void setPcfOneClickPartnerId(String pcfOneClickPartnerId) {
+        this.pcfOneClickPartnerId = pcfOneClickPartnerId;
+    }
+
+    public String getPcfOneClickPartnerSignature() {
+        return pcfOneClickPartnerSignature;
+    }
+
+    public void setPcfOneClickPartnerSignature(String pcfOneClickPartnerSignature) {
+        this.pcfOneClickPartnerSignature = pcfOneClickPartnerSignature;
+    }
+
+    public String getSenderCompany() {
+        return senderCompany;
+    }
+
+    public void setSenderCompany(String senderCompany) {
+        this.senderCompany = senderCompany;
+    }
+
+    public String getSenderForename() {
+        return senderForename;
+    }
+
+    public void setSenderForename(String senderForename) {
+        this.senderForename = senderForename;
+    }
+
+    public String getSenderSurname() {
+        return senderSurname;
+    }
+
+    public void setSenderSurname(String senderSurname) {
+        this.senderSurname = senderSurname;
+    }
+
+    public String getSenderHouseNumber() {
+        return senderHouseNumber;
+    }
+
+    public void setSenderHouseNumber(String senderHouseNumber) {
+        this.senderHouseNumber = senderHouseNumber;
+    }
+
+    public String getSenderZip() {
+        return senderZip;
+    }
+
+    public void setSenderZip(String senderZip) {
+        this.senderZip = senderZip;
+    }
+
+    public String getSenderCity() {
+        return senderCity;
+    }
+
+    public void setSenderCity(String senderCity) {
+        this.senderCity = senderCity;
+    }
+
+    public String getSenderStreet() {
+        return senderStreet;
+    }
+
+    public void setSenderStreet(String senderStreet) {
+        this.senderStreet = senderStreet;
+    }
+
 }

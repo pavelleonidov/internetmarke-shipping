@@ -7,11 +7,15 @@ import com.allaboutapple.WaWi.WaWiApplication.model.PrinterMap;
 import com.allaboutapple.WaWi.WaWiApplication.model.Settings;
 import com.allaboutapple.WaWi.WaWiApplication.model.prodws.SalesProduct;
 import com.allaboutapple.WaWi.WaWiApplication.model.prodws.SalesProductList;
+import com.allaboutapple.WaWi.WaWiApplication.service.InternetmarkeService;
 import com.allaboutapple.WaWi.WaWiApplication.service.PrinterService;
 import com.allaboutapple.WaWi.WaWiApplication.service.ProdWSSalesProductService;
 import com.allaboutapple.WaWi.WaWiApplication.service.SettingsXmlService;
 
 
+import com.allaboutapple.WaWi.WaWiApplication.service.internetmarke.AuthenticateUserRequestType;
+import com.google.common.hash.HashCode;
+import com.google.common.hash.Hashing;
 import com.jfoenix.controls.*;
 import de.felixroske.jfxsupport.FXMLController;
 import javafx.beans.value.ObservableValue;
@@ -26,11 +30,16 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.cell.ComboBoxListCell;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
+import org.apache.commons.io.Charsets;
 import org.controlsfx.control.ListSelectionView;
 
 
 import javax.swing.event.ChangeListener;
 import java.io.File;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -82,7 +91,48 @@ public class SettingsController {
     private JFXButton testPrinter;
 
 
-   // @FXML
+    @FXML
+    private JFXTextField pcfOneClickPartnerId;
+
+    @FXML
+    private JFXTextField pcfOneClickPartnerSignature;
+
+    @FXML
+    private JFXButton retrieveSignature;
+
+    @FXML
+    private Label internetmarkeSignature;
+
+    @FXML
+    private Label pcfOneClickBalance;
+
+    @FXML
+    private JFXTextField senderForeName;
+
+    @FXML
+    private JFXTextField senderSurName;
+
+    @FXML
+    private JFXTextField senderCompany;
+
+    @FXML
+    private JFXTextField senderStreet;
+
+    @FXML
+    private JFXTextField senderHouseNumber;
+
+    @FXML
+    private JFXTextField senderZip;
+
+    @FXML
+    private JFXTextField senderCity;
+
+
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("ddMMyyyy-HHmmss");
+
+    private static final ZoneId ZONE_ID = ZoneId.of("Europe/Berlin");
+
+    // @FXML
    // private ListSelectionView<SalesProduct> salesProductListViewNew;
 
     private static Settings settings;
@@ -105,8 +155,18 @@ public class SettingsController {
         prodWSMandantId.setText(getSettings().getProdWSMandantId());
         prodWSPassword.setText(getSettings().getProdWSPassword());
         prodWSUsername.setText(getSettings().getProdWSUsername());
-        pcfOneClickPassword.setText(getSettings().getProdWSPassword());
-        pcfOneClickUsername.setText(getSettings().getProdWSUsername());
+        pcfOneClickPassword.setText(getSettings().getPcfOneClickPassword());
+        pcfOneClickUsername.setText(getSettings().getPcfOneClickUsername());
+        pcfOneClickPartnerId.setText(getSettings().getPcfOneClickPartnerId());
+        pcfOneClickPartnerSignature.setText(getSettings().getPcfOneClickPartnerSignature());
+        senderForeName.setText(getSettings().getSenderForename());
+        senderSurName.setText(getSettings().getSenderSurname());
+        senderCompany.setText(getSettings().getSenderCompany());
+        senderZip.setText(getSettings().getSenderZip());
+        senderCity.setText(getSettings().getSenderCity());
+        senderHouseNumber.setText(getSettings().getSenderHouseNumber());
+        senderStreet.setText(getSettings().getSenderStreet());
+
         printerSelect.getSelectionModel().select(getSettings().getCurrentPrinter());
 
         SalesProductList productList = ProdWSSalesProductService.getInstance().getProducts();
@@ -198,6 +258,12 @@ public class SettingsController {
             PrinterService.getInstance().print(testText);
         });
 
+        retrieveSignature.setOnAction(event -> {
+            fillSettingsModel();
+
+            InternetmarkeService.getInstance().getPageFormats();
+        });
+
         saveButton.setOnAction(event -> {
             fillSettingsModel();
             try {
@@ -223,7 +289,18 @@ public class SettingsController {
         settings.setProdWSMandantId(prodWSMandantId.getText());
         settings.setProdWSPassword(prodWSPassword.getText());
         settings.setProdWSUsername(prodWSUsername.getText());
+        settings.setPcfOneClickPartnerId(pcfOneClickPartnerId.getText());
+        settings.setPcfOneClickPartnerSignature(pcfOneClickPartnerSignature.getText());
         settings.setCurrentPrinter(printerSelect.getSelectionModel().getSelectedItem().getIdentifier());
+
+        settings.setSenderForename(senderForeName.getText());
+        settings.setSenderSurname(senderSurName.getText());
+        settings.setSenderCity(senderCity.getText());
+        settings.setSenderCompany(senderCompany.getText());
+        settings.setSenderZip(senderZip.getText());
+        settings.setSenderStreet(senderStreet.getText());
+        settings.setSenderHouseNumber(senderHouseNumber.getText());
+
     }
 
     public static Settings getSettings() {
@@ -249,8 +326,6 @@ public class SettingsController {
             System.out.println("Settings model is empty!");
         }
     }
-
-
 
 
 }

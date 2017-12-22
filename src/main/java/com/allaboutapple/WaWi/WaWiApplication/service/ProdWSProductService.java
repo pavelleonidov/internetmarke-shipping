@@ -71,39 +71,5 @@ abstract public class ProdWSProductService<T extends ProductList<? extends Produ
         return SettingsController.getSettings();
     }
 
-    public class SOAPMessageWriterHandler implements SOAPHandler<SOAPMessageContext> {
 
-        public boolean handleMessage(SOAPMessageContext smc) {
-
-            Boolean outboundProperty = (Boolean) smc.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY);
-
-            SOAPMessage message = smc.getMessage();
-
-            try {
-                if (!outboundProperty.booleanValue()) {
-                    System.out.println("SOAP Response : ");
-                    message.writeTo(System.out);
-                } else {
-                    System.out.println("SOAP Request : ");
-                    message.writeTo(System.out);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return outboundProperty;
-        }
-
-        public Set getHeaders() {
-            return null;
-        }
-
-        public boolean handleFault(SOAPMessageContext context) {
-            return true;
-        }
-
-        public void close(MessageContext context) {
-        }
-
-
-    }
 }

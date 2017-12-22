@@ -147,6 +147,18 @@
 			<version>8.40.14</version>
 		</dependency>
 
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>23.5-jre</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.pdfbox</groupId>
+			<artifactId>pdfbox</artifactId>
+			<version>2.0.8</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>
@@ -184,32 +196,67 @@
 				<version>1.12</version>
 				<executions>
 					<execution>
-						<id>wsimport-from-jdk</id>
+						<id>wsimport-prodws</id>
 						<goals>
 							<goal>wsimport</goal>
 						</goals>
+						<configuration>
+							<!-- using wsdl from an url -->
+							<wsdlUrls>
+
+								<wsdlUrl>
+									https://prodws.deutschepost.de:8443/ProdWSProvider_1_1/prodws?wsdl
+								</wsdlUrl>
+							</wsdlUrls>
+							<!-- or using wsdls file directory -->
+							<!-- <wsdlDirectory>src/wsdl</wsdlDirectory> -->
+							<!-- which wsdl file -->
+							<!-- <wsdlFiles> -->
+							<!-- <wsdlFile>myWSDL.wsdl</wsdlFile> -->
+							<!--</wsdlFiles> -->
+							<!-- Keep generated files -->
+							<xadditionalHeaders>true</xadditionalHeaders>
+							<keep>true</keep>
+							<!-- Package name -->
+							<packageName>com.allaboutapple.WaWi.WaWiApplication.service.prodws</packageName>
+							<!-- generated source files destination-->
+							<sourceDestDir>target/generated-sources</sourceDestDir>
+
+						</configuration>
+
+					</execution>
+					<execution>
+						<id>wsimport-internetmarke</id>
+						<goals>
+							<goal>wsimport</goal>
+						</goals>
+
+						<configuration>
+
+							<!-- using wsdl from an url -->
+							<wsdlUrls>
+
+								<wsdlUrl>
+									https://internetmarke.deutschepost.de/OneClickForAppV3/OneClickForAppServiceV3?wsdl
+								</wsdlUrl>
+							</wsdlUrls>
+							<!-- or using wsdls file directory -->
+							<!-- <wsdlDirectory>src/wsdl</wsdlDirectory> -->
+							<!-- which wsdl file -->
+							<!-- <wsdlFiles> -->
+							<!-- <wsdlFile>myWSDL.wsdl</wsdlFile> -->
+							<!--</wsdlFiles> -->
+							<!-- Keep generated files -->
+							<keep>true</keep>
+							<!-- Package name -->
+							<packageName>com.allaboutapple.WaWi.WaWiApplication.service.internetmarke</packageName>
+							<!-- generated source files destination-->
+							<sourceDestDir>target/generated-sources</sourceDestDir>
+						</configuration>
+
 					</execution>
 				</executions>
-				<configuration>
-					<!-- using wsdl from an url -->
-					<wsdlUrls>
-						<wsdlUrl>
-							https://prodws.deutschepost.de:8443/ProdWSProvider_1_1/prodws?wsdl
-						</wsdlUrl>
-					</wsdlUrls>
-					<!-- or using wsdls file directory -->
-					<!-- <wsdlDirectory>src/wsdl</wsdlDirectory> -->
-					<!-- which wsdl file -->
-					<!-- <wsdlFiles> -->
-					<!-- <wsdlFile>myWSDL.wsdl</wsdlFile> -->
-					<!--</wsdlFiles> -->
-					<!-- Keep generated files -->
-					<keep>true</keep>
-					<!-- Package name -->
-					<packageName>com.allaboutapple.WaWi.WaWiApplication.service.prodws</packageName>
-					<!-- generated source files destination-->
-					<sourceDestDir>target/generated-sources</sourceDestDir>
-				</configuration>
+
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
