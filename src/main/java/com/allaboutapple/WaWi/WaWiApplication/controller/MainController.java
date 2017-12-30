@@ -17,7 +17,10 @@ import com.jfoenix.controls.JFXTreeTableView;
 import com.jfoenix.controls.RecursiveTreeItem;
 import com.jfoenix.controls.datamodels.treetable.RecursiveTreeObject;
 import de.felixroske.jfxsupport.FXMLController;
+import io.swagger.client.ApiException;
 import io.swagger.client.api.CustomerAddressRepositoryV1Api;
+import io.swagger.client.api.SalesShipOrderV1Api;
+import io.swagger.client.model.Body99;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.Event;
@@ -81,20 +84,21 @@ public class MainController extends AbstractController {
 
         SalesProductList productList = ProdWSSalesProductService.getInstance().getProducts();
 
-        ObservableList<SalesProduct> observableList = FXCollections.observableList(productList.getProducts());
-        prodWSProducts.setItems(observableList);
-        prodWSProducts.setCellFactory((final ListView<SalesProduct> listView) -> {
-            return new ListCell<SalesProduct>() {
-                @Override
-                protected void updateItem(SalesProduct t, boolean bln) {
-                    super.updateItem(t, bln);
-                    if(t != null) {
-                        setText(t.getName());
+        if(productList != null) {
+            ObservableList<SalesProduct> observableList = FXCollections.observableList(productList.getProducts());
+            prodWSProducts.setItems(observableList);
+            prodWSProducts.setCellFactory((final ListView<SalesProduct> listView) -> {
+                return new ListCell<SalesProduct>() {
+                    @Override
+                    protected void updateItem(SalesProduct t, boolean bln) {
+                        super.updateItem(t, bln);
+                        if(t != null) {
+                            setText(t.getName());
+                        }
                     }
-                }
-            };
-        });
-
+                };
+            });
+        }
 
 
         if(SettingsController.getSettings().getMagento2AccessToken() != null) {
@@ -113,9 +117,9 @@ public class MainController extends AbstractController {
                             "desc",
                             100,
                             1,
-                            null,
-                            null,
-                            null);
+                            "status",
+                            "pending",
+                            "eq");
 
 
 
@@ -199,7 +203,7 @@ public class MainController extends AbstractController {
 
     }
 
-    public void triggerPrintAndShipProduct(final Event e) {
+    public void triggerPrintLabel(final Event e) {
         SalesProduct product = selectedProduct.get();
 
 
@@ -218,6 +222,21 @@ public class MainController extends AbstractController {
 
         int totalValue = product.getGrossPriceValue().multiply(new BigDecimal(100)).intValueExact();
 
+
+     /*   String targetProduct = InternetmarkeService.getInstance().getProduct(Integer.parseInt(product.getId()), magentoOrder.getCustomerFirstname(), magentoOrder.getCustomerLastname(),address.getCompany(), address.getPostcode(), address.getCity(), streetNo[0], streetNo[1], "DEU", totalValue);
+
+        try {
+            URL url = new URL(targetProduct);
+            InputStream in = url.openStream();
+            Files.copy(in, Paths.get(WaWiApplication.getHomeDirectory() + "marke.pdf"));
+
+        } catch (MalformedURLException e1) {
+            e1.printStackTrace();
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        } */
+
+
         try {
             PDDocument document = PDDocument.load(new File(WaWiApplication.getHomeDirectory() + "marke.pdf"));
 
@@ -225,18 +244,27 @@ public class MainController extends AbstractController {
         } catch (IOException e1) {
             e1.printStackTrace();
         }
+    }
 
-        //  String targetProduct = InternetmarkeService.getInstance().getProduct(Integer.parseInt(product.getId()), magentoOrder.getCustomerFirstname(), magentoOrder.getCustomerLastname(),address.getCompany(), address.getPostcode(), address.getCity(), streetNo[0], streetNo[1], "DEU", totalValue);
+    public void triggerShipProduct(final Event e) {
 
-//        try {
-//            URL url = new URL(targetProduct);
-//            InputStream in = url.openStream();
-//            Files.copy(in, Paths.get(WaWiApplication.getHomeDirectory() + "marke.pdf"));
-//        } catch (MalformedURLException e1) {
-//            e1.printStackTrace();
-//        } catch (IOException e1) {
-//            e1.printStackTrace();
-//        }
+        io.swagger.client.model.SalesDataOrderInterface magentoOrder = selectedOrder.get();
+        SalesShipOrderV1Api salesShip = new SalesShipOrderV1Api();
+        salesShip.getApiClient().setAccessToken(SettingsController.getSettings().getMagento2AccessToken());
+        salesShip.getApiClient().setBasePath(SettingsController.getSettings().getMagento2ApiUrl());
+        salesShip.getApiClient().getHttpClient().setReadTimeout(30, TimeUnit.SECONDS);
+
+        io.swagger.client.model.Body99 shipBody = new Body99();
+        shipBody.setNotify(Boolean.TRUE);
+
+        try {
+            salesShip.salesShipOrderV1ExecutePost(
+                    magentoOrder.getEntityId(),
+                    shipBody
+            );
+        } catch (ApiException e1) {
+            e1.printStackTrace();
+        }
 
 
     }

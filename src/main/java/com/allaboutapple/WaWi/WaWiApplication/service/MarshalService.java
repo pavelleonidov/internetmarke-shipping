@@ -14,7 +14,10 @@ abstract public class MarshalService<T> {
     protected T getObject() {
         if(object == null) {
             try {
-                object = unmarshal();
+                File file = new File(fileName);
+                if(file.exists()) {
+                    object = unmarshal();
+                }
             } catch(JAXBException e) {
                 e.printStackTrace();
             }

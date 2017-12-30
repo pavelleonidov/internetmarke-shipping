@@ -12,7 +12,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox prefHeight="629.0" prefWidth="1197.0" xmlns="http://javafx.com/javafx/8.0.152" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.allaboutapple.WaWi.WaWiApplication.controller.MainController">
+<VBox prefHeight="629.0" prefWidth="1197.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.allaboutapple.WaWi.WaWiApplication.controller.MainController">
    <children>
       <MenuBar VBox.vgrow="NEVER">
         <menus>
@@ -59,7 +59,8 @@
                         <JFXListView fx:id="prodWSProducts" layoutX="14.0" layoutY="-129.0" prefWidth="308.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                      </children>
                   </AnchorPane>
-                  <JFXButton fx:id="shipItem" layoutX="14.0" layoutY="430.0" style="-fx-background-color: #dddddd;" text="Internetmarke drucken und versenden" onAction="#triggerPrintAndShipProduct" />
+                  <JFXButton fx:id="printLabel" layoutX="14.0" layoutY="430.0" onAction="#triggerPrintLabel" style="-fx-background-color: #dddddd;" text="Internetmarke drucken" />
+                  <JFXButton fx:id="shipItem" layoutX="14.0" layoutY="472.0" onAction="#triggerShipProduct" style="-fx-background-color: #dddddd;" text="Versenden" />
                </children></AnchorPane>
         </items>
       </SplitPane>

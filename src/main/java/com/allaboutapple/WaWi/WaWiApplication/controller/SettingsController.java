@@ -23,7 +23,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.Event;
 import javafx.fxml.FXML;
-import javafx.print.Printer;
+import com.allaboutapple.WaWi.WaWiApplication.printer.Printer;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
@@ -171,45 +171,46 @@ public class SettingsController {
 
         SalesProductList productList = ProdWSSalesProductService.getInstance().getProducts();
 
-        ObservableList<SalesProduct> observableList = FXCollections.observableList(productList.getProducts());
-       // salesProductListView.setItems(observableList);
+        if(productList != null) {
+            ObservableList<SalesProduct> observableList = FXCollections.observableList(productList.getProducts());
+           // salesProductListView.setItems(observableList);
 
-     /*   salesProductListView.setCellFactory(new Callback<ListView<SalesProduct>, ListCell<SalesProduct>>() {
-            @Override
-            public ListCell<SalesProduct> call(ListView<SalesProduct> salesProductListView) {
-                ListCell<SalesProduct> cell = new ListCell<SalesProduct>() {
-                    @Override
-                    protected void updateItem(SalesProduct t, boolean bln) {
-                        super.updateItem(t, bln);
-                        if(t != null) {
-                            setText(t.getName());
+         /*   salesProductListView.setCellFactory(new Callback<ListView<SalesProduct>, ListCell<SalesProduct>>() {
+                @Override
+                public ListCell<SalesProduct> call(ListView<SalesProduct> salesProductListView) {
+                    ListCell<SalesProduct> cell = new ListCell<SalesProduct>() {
+                        @Override
+                        protected void updateItem(SalesProduct t, boolean bln) {
+                            super.updateItem(t, bln);
+                            if(t != null) {
+                                setText(t.getName());
+                            }
                         }
-                    }
-                };
+                    };
 
-                return cell;
-            }
-        }); */
+                    return cell;
+                }
+            }); */
 
-        salesProductListView.setSourceItems(observableList);
-        salesProductListView.setCellFactory(new Callback<ListView<SalesProduct>, ListCell<SalesProduct>>() {
-            @Override
-            public ListCell<SalesProduct> call(ListView<SalesProduct> salesProductListView) {
-                ListCell<SalesProduct> cell = new ListCell<SalesProduct>() {
-                    @Override
-                    protected void updateItem(SalesProduct t, boolean bln) {
-                        super.updateItem(t, bln);
-                        if(t != null) {
-                            setText(t.getName());
+            salesProductListView.setSourceItems(observableList);
+            salesProductListView.setCellFactory(new Callback<ListView<SalesProduct>, ListCell<SalesProduct>>() {
+                @Override
+                public ListCell<SalesProduct> call(ListView<SalesProduct> salesProductListView) {
+                    ListCell<SalesProduct> cell = new ListCell<SalesProduct>() {
+                        @Override
+                        protected void updateItem(SalesProduct t, boolean bln) {
+                            super.updateItem(t, bln);
+                            if(t != null) {
+                                setText(t.getName());
+                            }
                         }
-                    }
-                };
+                    };
 
-                return cell;
-            }
-        });
+                    return cell;
+                }
+            });
 
-
+        }
 
         printerSelect.setCellFactory((final ListView<PrinterMap> listView) -> {
             return new ComboBoxListCell<PrinterMap>() {

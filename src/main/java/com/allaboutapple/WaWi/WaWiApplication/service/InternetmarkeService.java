@@ -138,7 +138,7 @@ public class InternetmarkeService {
         ShoppingCartPDFRequestType pdfRequestType = new ShoppingCartPDFRequestType();
         pdfRequestType.setUserToken(authenticateAndGetToken());
         pdfRequestType.setShopOrderId(getOrderId());
-       pdfRequestType.setPageFormatId(76);
+       pdfRequestType.setPageFormatId(1);
 
        //List<ShoppingCartPDFPosition> pdfPositions = pdfRequestType.getPositions();
 

@@ -2,12 +2,11 @@ package com.allaboutapple.WaWi.WaWiApplication.service;
 
 import com.allaboutapple.WaWi.WaWiApplication.controller.SettingsController;
 import com.allaboutapple.WaWi.WaWiApplication.model.Settings;
-import com.sun.javafx.print.PrintHelper;
-import com.sun.javafx.print.Units;
+import com.allaboutapple.WaWi.WaWiApplication.printer.PrintHelper;
 import javafx.collections.ObservableSet;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Rectangle2D;
-import javafx.print.*;
+import com.allaboutapple.WaWi.WaWiApplication.printer.*;
 import javafx.scene.Node;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -71,33 +70,45 @@ public class PrinterService {
         Printer printer = getCurrentPrinter();
 
 
-     //   printer.createPageLayout(getCurrentPrinter().getPrinterAttributes().getDefaultPaper(),
+       // printer.createPageLayout(getCurrentPrinter().getPrinterAttributes().getDefaultPaper(),
        //         getCurrentPrinter().getPrinterAttributes().getDefaultPageOrientation(),
        //         Printer.MarginType.EQUAL);
 
 
         PrinterAttributes attributes = printer.getPrinterAttributes();
 
-        System.out.printf("\nLabel Size: %g, %g(%s)\n", attributes.getDefaultPaper().getWidth(), attributes.getDefaultPaper().getHeight(), attributes.getDefaultPaper().toString());
 
-        //Paper label = attributes.getDefaultPaper();
-        Paper label = PrintHelper.createPaper("LabelPrinter", 2.9, 9.0, Units.MM);
+      //  System.out.printf("\nLabel Size: %g, %g(%s)\n", attributes.getDefaultPaper().getWidth(), attributes.getDefaultPaper().getHeight(), attributes.getDefaultPaper().toString());
 
-        System.out.println(label);
-        PageOrientation orientation = printer.getPrinterAttributes().getDefaultPageOrientation();
+         // Paper label = attributes.getDefaultPaper();
+     //   Paper label = Paper.MONARCH_ENVELOPE;
+        //Paper label = PrintHelper.createPaper("LabelPrinter", 29, 90, Units.MM);
+
+
+        Paper label = attributes.getDefaultPaper();
+
+
+     //   System.out.println(label);
+        PageOrientation orientation = PageOrientation.LANDSCAPE;
+
         PageLayout layout = printer.createPageLayout(label, orientation, Printer.MarginType.HARDWARE_MINIMUM);
-        System.out.printf("\nPageLayout: %s\n", layout.toString());
+//        jobSettings.setPageLayout(layout);
 
+
+        System.out.printf("\nPageLayout: %s\n", layout.toString());
+//
        // PrinterJob printerJob = PrinterJob.createPrinterJob();
 
       //  boolean success = printerJob.printPage(layout, node);
 
+
         PrinterJob job = PrinterJob.createPrinterJob(printer);
 
-        double scaleX = layout.getPrintableWidth() / node.getBoundsInParent().getWidth();
-        double scaleY = layout.getPrintableHeight() / node.getBoundsInParent().getHeight();
-        System.out.println(layout.getPrintableWidth());
-        node.getTransforms().add(new Scale(scaleX, scaleY));
+       // double scaleX = layout.getPrintableWidth() / node.getBoundsInParent().getWidth();
+       // double scaleY = layout.getPrintableHeight() / node.getBoundsInParent().getHeight();
+        //System.out.println(layout.getPrintableWidth());
+       // node.getTransforms().add(new Scale(scaleX, scaleY));
+
 
 
       //  System.out.println(job.getJobSettings().getPageLayout().getBottomMargin());
@@ -135,14 +146,60 @@ public class PrinterService {
         Image convertedImage;
         ImageView imageView = new ImageView();
 
+        Printer printer = getCurrentPrinter();
+
+
+        // printer.createPageLayout(getCurrentPrinter().getPrinterAttributes().getDefaultPaper(),
+        //         getCurrentPrinter().getPrinterAttributes().getDefaultPageOrientation(),
+        //         Printer.MarginType.EQUAL);
+
+
+        PrinterAttributes attributes = printer.getPrinterAttributes();
+
+
+        //  System.out.printf("\nLabel Size: %g, %g(%s)\n", attributes.getDefaultPaper().getWidth(), attributes.getDefaultPaper().getHeight(), attributes.getDefaultPaper().toString());
+
+         Paper label = attributes.getDefaultPaper();
+        //   Paper label = Paper.MONARCH_ENVELOPE;
+       // Paper label = PrintHelper.createPaper("LabelPrinter", 29, 90, Units.MM);
+
+
+      //  Paper label = attributes.getDefaultPaper();
+
+
+        //   System.out.println(label);
+        //PageOrientation orientation = attributes.getDefaultPageOrientation();
+        PageOrientation orientation = PageOrientation.LANDSCAPE;
+
+        PageLayout layout = printer.createPageLayout(label, orientation, Printer.MarginType.HARDWARE_MINIMUM);
+
 
         try {
+
             BufferedImage image = pdfRenderer.renderImageWithDPI(0, 300, ImageType.RGB);
-            convertedImage = SwingFXUtils.toFXImage(image, null);
+           // BufferedImage imagePart = image.getSubimage(50,50, (int) label.getWidth(), (int) label.getHeight() );
+            System.out.println(image.getWidth());
+            BufferedImage imagePart = image.getSubimage(150,350, 1000, 380);
+
+            convertedImage = SwingFXUtils.toFXImage(imagePart, null);
+
             imageView.setImage(convertedImage);
+
+          //  imageView.setFitWidth(layout.getPrintableWidth());
+         //   imageView.setFitHeight(layout.getPrintableHeight());
+             double scaleX = layout.getPrintableWidth() / convertedImage.getWidth();
+             double scaleY = layout.getPrintableHeight() / convertedImage.getHeight();
+
+             double minimumScale = Math.min(scaleX, scaleY);
+             System.out.println(minimumScale);
+             imageView.getTransforms().add(new Scale(minimumScale, minimumScale));
+            // imageView.setFitWidth(layout.getPrintableWidth());
+            // imageView.setFitHeight(layout.getPrintableHeight());
+
 
             if (job != null)
             {
+                job.getJobSettings().setPageLayout(layout);
 
                 // Print the node
                 boolean printed = job.printPage(imageView);
@@ -151,6 +208,7 @@ public class PrinterService {
                 {
                     // End the printer job
                     job.endJob();
+                    document.close();
                 }
                 else
                 {
