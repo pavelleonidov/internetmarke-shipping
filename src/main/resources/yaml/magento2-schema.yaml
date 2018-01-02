@@ -8226,6 +8226,18 @@ paths:
           in: query
           type: string
           description: Second condition type in group
+        - name: 'searchCriteria[filterGroups][1][filters][0][field]'
+          in: query
+          type: string
+          description: First field in second group
+        - name: 'searchCriteria[filterGroups][1][filters][0][value]'
+          in: query
+          type: string
+          description: First value in second group
+        - name: 'searchCriteria[filterGroups][1][filters][0][conditionType]'
+          in: query
+          type: string
+          description: First condition type in second group
       responses:
         '200':
           description: 200 Success.
