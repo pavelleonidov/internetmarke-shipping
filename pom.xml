@@ -3,12 +3,12 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.allaboutapple.WaWi</groupId>
-	<artifactId>WaWiApplication</artifactId>
+	<groupId>de.pavelleonidov</groupId>
+	<artifactId>InternetmarkeShipping</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 
-	<name>WaWiApplication</name>
-	<description>Demo project for Spring Boot</description>
+	<name>Internetmarke Shipping</name>
+	<description>Magento 2 connector and Deutsche Post Internetmarke label printing application</description>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>
@@ -167,28 +167,6 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
-			<plugin>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<configuration>
-					<archive>
-						<manifest>
-							<mainClass>com.allaboutapple.WaWi.WaWiApplication</mainClass>
-						</manifest>
-					</archive>
-					<descriptorRefs>
-						<descriptorRef>jar-with-dependencies</descriptorRef>
-					</descriptorRefs>
-				</configuration>
-				<executions>
-					<execution>
-						<id>make-assembly</id>
-						<phase>package</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
 
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
@@ -218,7 +196,7 @@
 							<xadditionalHeaders>true</xadditionalHeaders>
 							<keep>true</keep>
 							<!-- Package name -->
-							<packageName>com.allaboutapple.WaWi.WaWiApplication.service.prodws</packageName>
+							<packageName>de.pavelleonidov.InternetmarkeShipping.service.prodws</packageName>
 							<!-- generated source files destination-->
 							<sourceDestDir>target/generated-sources</sourceDestDir>
 
@@ -249,7 +227,7 @@
 							<!-- Keep generated files -->
 							<keep>true</keep>
 							<!-- Package name -->
-							<packageName>com.allaboutapple.WaWi.WaWiApplication.service.internetmarke</packageName>
+							<packageName>de.pavelleonidov.InternetmarkeShipping.service.internetmarke</packageName>
 							<!-- generated source files destination-->
 							<sourceDestDir>target/generated-sources</sourceDestDir>
 						</configuration>
@@ -309,8 +287,4 @@
 		</plugins>
 
 	</build>
-
-
-
-
 </project>
