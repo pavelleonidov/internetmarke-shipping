@@ -186,6 +186,7 @@ public class MainController extends AbstractController {
 
 
         try {
+
             salesShip.salesShipOrderV1ExecutePost(
                     magentoOrder.getEntityId(),
                     shipBody
@@ -274,7 +275,9 @@ public class MainController extends AbstractController {
 
 
                         orderDetailsTreeObjects.addAll(
-                          new OrderDetailsTreeObject("Straße", address.getStreet().get(0)),
+                          new OrderDetailsTreeObject("Name", responseOrder.getCustomerFirstname() + " " + responseOrder.getCustomerLastname()),
+                          new OrderDetailsTreeObject("Straße", (address.getStreet() != null ? address.getStreet().get(0) : "")),
+                          new OrderDetailsTreeObject("PLZ", address.getPostcode()),
                           new OrderDetailsTreeObject("Stadt", address.getCity()),
                           new OrderDetailsTreeObject("Land", address.getCountryId())
                         );
@@ -408,7 +411,7 @@ public class MainController extends AbstractController {
                                             "pending",
                                             "eq",
                                             "created_at",
-                                            "2017-12-12 00:00:00",
+                                            "2018-01-08 00:00:00",
                                             "gt"
                                     );
                                     //System.out.println(orders.getItems());
