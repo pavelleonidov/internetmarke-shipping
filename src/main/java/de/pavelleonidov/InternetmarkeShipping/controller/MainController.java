@@ -54,10 +54,7 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.TimeZone;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
@@ -98,6 +95,8 @@ public class MainController extends AbstractController {
 
     protected ObservableList<SalesItemTreeObject> salesItemTreeObjects = FXCollections.observableArrayList();
 
+    protected Map<String, Locale> localeMap;
+
     @FXML
     void initialize() {
 
@@ -136,7 +135,12 @@ public class MainController extends AbstractController {
 
                 PDDocument document = PDDocument.load(new File(internetmarkeLabelFile));
 
-                PrinterService.getInstance().printDocument(document);
+                io.swagger.client.model.SalesDataOrderAddressInterface address = magentoOrder.getExtensionAttributes().getShippingAssignments().get(0).getShipping().getAddress();
+
+                boolean isInternational = !address.getCountryId().equals("DE");
+                boolean hasCompanyName = address.getCompany() != null;
+
+                PrinterService.getInstance().printDocument(document, isInternational, hasCompanyName);
                 walletBalance.setText(InternetmarkeService.getInstance().getFormattedWalletBalance());
             } catch (IOException e1) {
                 e1.printStackTrace();
@@ -152,8 +156,15 @@ public class MainController extends AbstractController {
         File currentLabelFile = new File(Main.getHomeDirectory() + "marke-" + magentoOrder.getIncrementId() + "-" + product.getId() + ".pdf");
         if(currentLabelFile.exists()) {
             try {
+
+                io.swagger.client.model.SalesDataOrderAddressInterface address = magentoOrder.getExtensionAttributes().getShippingAssignments().get(0).getShipping().getAddress();
+
+                boolean isInternational = !address.getCountryId().equals("DE");
+                boolean hasCompanyName = address.getCompany() != null;
+
                 PDDocument document = PDDocument.load(currentLabelFile);
-                PrinterService.getInstance().printDocument(document);
+
+                PrinterService.getInstance().printDocument(document, isInternational, hasCompanyName);
             } catch (IOException e1) {
                 e1.printStackTrace();
             }
@@ -486,7 +497,8 @@ public class MainController extends AbstractController {
 
         int totalValue = product.getGrossPriceValue().multiply(new BigDecimal(100)).intValueExact();
 
-        String targetProduct = InternetmarkeService.getInstance().getProduct(Integer.parseInt(product.getId()), magentoOrder.getCustomerFirstname(), magentoOrder.getCustomerLastname(),address.getCompany(), address.getPostcode(), address.getCity(), street, houseNumber, "DEU", totalValue);
+
+        String targetProduct = InternetmarkeService.getInstance().getProduct(Integer.parseInt(product.getId()), magentoOrder.getCustomerFirstname(), magentoOrder.getCustomerLastname(),address.getCompany(), address.getPostcode(), address.getCity(), street, houseNumber, iso2CountryCodeToIso3CountryCode(address.getCountryId()), totalValue);
 
        try {
             URL url = new URL(targetProduct);
@@ -548,5 +560,11 @@ public class MainController extends AbstractController {
             return "";
         }
     }
+
+    private String iso2CountryCodeToIso3CountryCode(String iso2CountryCode){
+        Locale locale = new Locale("", iso2CountryCode);
+        return locale.getISO3Country();
+    }
+
 
 }

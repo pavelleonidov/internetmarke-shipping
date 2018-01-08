@@ -112,7 +112,7 @@ public class PrinterService {
         }
     }
 
-    public void printDocument(PDDocument document) {
+    public void printDocument(PDDocument document, boolean isInternational, boolean hasCompanyName) {
         PrinterJob job = PrinterJob.createPrinterJob(getCurrentPrinter());
 
         PDFRenderer pdfRenderer = new PDFRenderer(document);
@@ -145,7 +145,10 @@ public class PrinterService {
            // BufferedImage imagePart = image.getSubimage(50,50, (int) label.getWidth(), (int) label.getHeight() );
 
             if(getSettings().isLabelPrinter()) {
-                BufferedImage imagePart = image.getSubimage(150,350, 1000, 410);
+
+                int height = 380 + 30 * ((isInternational ? 1 : 0) + (hasCompanyName ? 1 : 0));
+
+                BufferedImage imagePart = image.getSubimage(150,350, 1000, height);
                 convertedImage = SwingFXUtils.toFXImage(imagePart, null);
 
                 imageView.setImage(convertedImage);
