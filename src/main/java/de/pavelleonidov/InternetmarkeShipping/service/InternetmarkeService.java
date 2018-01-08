@@ -163,71 +163,82 @@ public class InternetmarkeService {
         ShoppingCartPDFRequestType pdfRequestType = new ShoppingCartPDFRequestType();
         pdfRequestType.setUserToken(authenticateAndGetToken());
         pdfRequestType.setShopOrderId(getOrderId());
-       pdfRequestType.setPageFormatId(1);
+        pdfRequestType.setPageFormatId(1);
 
-       //List<ShoppingCartPDFPosition> pdfPositions = pdfRequestType.getPositions();
+        //List<ShoppingCartPDFPosition> pdfPositions = pdfRequestType.getPositions();
 
-       ShoppingCartPDFPosition defaultPosition = new ShoppingCartPDFPosition();
-       defaultPosition.setProductCode(productId);
+        ShoppingCartPDFPosition defaultPosition = new ShoppingCartPDFPosition();
+        defaultPosition.setProductCode(productId);
 
-       Address senderAddress = new Address();
+        Address senderAddress = new Address();
+
+        PersonName senderPersonName = new PersonName();
+        senderPersonName.setFirstname(getSettings().getSenderForename());
+        senderPersonName.setLastname(getSettings().getSenderSurname());
+
         de.pavelleonidov.InternetmarkeShipping.service.internetmarke.Name senderName = new de.pavelleonidov.InternetmarkeShipping.service.internetmarke.Name();
-        CompanyName companyName = new CompanyName();
-        companyName.setCompany(getSettings().getSenderCompany());
-        senderName.setCompanyName(companyName);
 
-       senderAddress.setCity(getSettings().getSenderCity());
-       senderAddress.setHouseNo(getSettings().getSenderHouseNumber());
-       senderAddress.setStreet(getSettings().getSenderStreet());
-       senderAddress.setZip(getSettings().getSenderZip());
-       senderAddress.setCountry("DEU");
+        if(getSettings().getSenderCompany() != null) {
+            CompanyName senderCompanyName = new CompanyName();
+            senderCompanyName.setCompany(getSettings().getSenderCompany());
+            senderCompanyName.setPersonName(senderPersonName);
+            senderName.setCompanyName(senderCompanyName);
+        } else {
+            senderName.setPersonName(senderPersonName);
+        }
 
-       NamedAddress sender = new NamedAddress();
-       sender.setAddress(senderAddress);
-       sender.setName(senderName);
+        senderAddress.setCity(getSettings().getSenderCity());
+        senderAddress.setHouseNo(getSettings().getSenderHouseNumber());
+        senderAddress.setStreet(getSettings().getSenderStreet());
+        senderAddress.setZip(getSettings().getSenderZip());
+        senderAddress.setCountry("DEU");
 
-       Address receiverAddress = new Address();
-       receiverAddress.setCity(receiverCity);
-       receiverAddress.setHouseNo(receiverHouseNumber);
-       receiverAddress.setStreet(receiverStreet);
-       receiverAddress.setZip(receiverZip);
-       receiverAddress.setCountry(receiverCountry);
+        NamedAddress sender = new NamedAddress();
+        sender.setAddress(senderAddress);
+        sender.setName(senderName);
 
-       PersonName receiverPersonName = new PersonName();
-       receiverPersonName.setFirstname(receiverFirstName);
-       receiverPersonName.setLastname(receiverLastName);
+        Address receiverAddress = new Address();
+        receiverAddress.setCity(receiverCity);
+        receiverAddress.setHouseNo(receiverHouseNumber);
+        receiverAddress.setStreet(receiverStreet);
+        receiverAddress.setZip(receiverZip);
+        receiverAddress.setCountry(receiverCountry);
 
-       de.pavelleonidov.InternetmarkeShipping.service.internetmarke.Name receiverName = new de.pavelleonidov.InternetmarkeShipping.service.internetmarke.Name();
-       if(receiverCompany != null) {
+        PersonName receiverPersonName = new PersonName();
+        receiverPersonName.setFirstname(receiverFirstName);
+        receiverPersonName.setLastname(receiverLastName);
+
+        de.pavelleonidov.InternetmarkeShipping.service.internetmarke.Name receiverName = new de.pavelleonidov.InternetmarkeShipping.service.internetmarke.Name();
+        if(receiverCompany != null) {
            CompanyName receiverCompanyName = new CompanyName();
            receiverCompanyName.setCompany(receiverCompany);
            receiverCompanyName.setPersonName(receiverPersonName);
            receiverName.setCompanyName(receiverCompanyName);
-       }
+        } else {
+           receiverName.setPersonName(receiverPersonName);
+        }
 
-       receiverName.setPersonName(receiverPersonName);
-
-       NamedAddress receiver = new NamedAddress();
-       receiver.setAddress(receiverAddress);
-       receiver.setName(receiverName);
+        NamedAddress receiver = new NamedAddress();
+        receiver.setAddress(receiverAddress);
+        receiver.setName(receiverName);
 
 
-       AddressBinding addressBinding = new AddressBinding();
-       addressBinding.setSender(sender);
-       addressBinding.setReceiver(receiver);
+        AddressBinding addressBinding = new AddressBinding();
+        addressBinding.setSender(sender);
+        addressBinding.setReceiver(receiver);
 
-       defaultPosition.setAddress(addressBinding);
+        defaultPosition.setAddress(addressBinding);
 
-       VoucherPosition voucherPosition = new VoucherPosition();
-       voucherPosition.setPage(1);
-       voucherPosition.setLabelX(1);
-       voucherPosition.setLabelY(1);
-       defaultPosition.setPosition(voucherPosition);
+        VoucherPosition voucherPosition = new VoucherPosition();
+        voucherPosition.setPage(1);
+        voucherPosition.setLabelX(1);
+        voucherPosition.setLabelY(1);
+        defaultPosition.setPosition(voucherPosition);
 
-       defaultPosition.setVoucherLayout(VoucherLayout.ADDRESS_ZONE);
+        defaultPosition.setVoucherLayout(VoucherLayout.ADDRESS_ZONE);
 
-       pdfRequestType.getPositions().add(defaultPosition);
-       pdfRequestType.setTotal(totalValue);
+        pdfRequestType.getPositions().add(defaultPosition);
+        pdfRequestType.setTotal(totalValue);
 
         try {
             ShoppingCartResponseType shoppingCartResponse = port.checkoutShoppingCartPDF(pdfRequestType);

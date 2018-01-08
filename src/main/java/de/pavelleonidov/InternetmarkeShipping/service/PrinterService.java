@@ -64,45 +64,17 @@ public class PrinterService {
     }
 
     public void print(Node node) {
-        // Define the Job Status Message
-
-        // Create a printer job for the default printer
-        //getCurrentPrinter().createPageLayout(Paper.JAPANESE_POSTCARD, PageOrientation.LANDSCAPE, Printer.MarginType.HARDWARE_MINIMUM);
 
         Printer printer = getCurrentPrinter();
 
-
-       // printer.createPageLayout(getCurrentPrinter().getPrinterAttributes().getDefaultPaper(),
-       //         getCurrentPrinter().getPrinterAttributes().getDefaultPageOrientation(),
-       //         Printer.MarginType.EQUAL);
-
-
         PrinterAttributes attributes = printer.getPrinterAttributes();
-
-
-      //  System.out.printf("\nLabel Size: %g, %g(%s)\n", attributes.getDefaultPaper().getWidth(), attributes.getDefaultPaper().getHeight(), attributes.getDefaultPaper().toString());
-
-         // Paper label = attributes.getDefaultPaper();
-     //   Paper label = Paper.MONARCH_ENVELOPE;
-        //Paper label = PrintHelper.createPaper("LabelPrinter", 29, 90, Units.MM);
-
-
         Paper label = attributes.getDefaultPaper();
+        PageLayout layout = getCurrentPrinter().getDefaultPageLayout();
 
-
-     //   System.out.println(label);
-        PageOrientation orientation = PageOrientation.LANDSCAPE;
-
-        PageLayout layout = printer.createPageLayout(label, orientation, Printer.MarginType.HARDWARE_MINIMUM);
-//        jobSettings.setPageLayout(layout);
-
-
-        System.out.printf("\nPageLayout: %s\n", layout.toString());
-//
-       // PrinterJob printerJob = PrinterJob.createPrinterJob();
-
-      //  boolean success = printerJob.printPage(layout, node);
-
+        if(getSettings().isLabelPrinter()) {
+            PageOrientation orientation = PageOrientation.LANDSCAPE;
+            layout = printer.createPageLayout(label, orientation, Printer.MarginType.HARDWARE_MINIMUM);
+        }
 
         PrinterJob job = PrinterJob.createPrinterJob(printer);
 
@@ -173,7 +145,7 @@ public class PrinterService {
            // BufferedImage imagePart = image.getSubimage(50,50, (int) label.getWidth(), (int) label.getHeight() );
 
             if(getSettings().isLabelPrinter()) {
-                BufferedImage imagePart = image.getSubimage(150,350, 1000, 380);
+                BufferedImage imagePart = image.getSubimage(150,350, 1000, 410);
                 convertedImage = SwingFXUtils.toFXImage(imagePart, null);
 
                 imageView.setImage(convertedImage);
