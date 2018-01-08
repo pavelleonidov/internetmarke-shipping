@@ -15,7 +15,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox prefHeight="629.0" prefWidth="1197.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.pavelleonidov.InternetmarkeShipping.controller.MainController">
+<VBox prefHeight="679.0" prefWidth="1197.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.pavelleonidov.InternetmarkeShipping.controller.MainController">
    <children>
       <MenuBar VBox.vgrow="NEVER">
         <menus>
@@ -84,36 +84,37 @@
             </AnchorPane>
           <AnchorPane prefHeight="600.0" prefWidth="337.0" style="-fx-background-color: #FFFFFF;" stylesheets="@style.css">
                <children>
-                  <Label layoutX="13.0" layoutY="89.0" prefHeight="22.0" prefWidth="263.0" text="Internetmarke auswählen:">
+                  <Label layoutX="13.0" layoutY="131.0" prefHeight="22.0" prefWidth="263.0" text="Internetmarke auswählen:">
                      <font>
                         <Font size="16.0" />
                      </font>
                   </Label>
-                  <AnchorPane layoutX="14.0" layoutY="114.0" prefHeight="350.0" prefWidth="309.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="114.0">
+                  <AnchorPane layoutX="14.0" layoutY="164.0" prefHeight="350.0" prefWidth="309.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="164.0">
                      <children>
-                        <JFXListView fx:id="prodWSProducts" layoutX="14.0" layoutY="-21.0" prefHeight="350.0" prefWidth="309.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                        <JFXListView fx:id="prodWSProducts" layoutX="14.0" layoutY="9.0" prefHeight="341.0" prefWidth="309.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                      </children>
                   </AnchorPane>
-                  <JFXButton fx:id="printLabel" layoutX="13.0" layoutY="505.0" onAction="#triggerPrintLabel" style="-fx-background-color: #dddddd;" text="Internetmarke drucken" />
-                  <JFXButton fx:id="shipItem" layoutX="14.0" layoutY="539.0" onAction="#triggerShipProduct" style="-fx-background-color: #dddddd;" text="Versenden" />
-                  <Label layoutX="14.0" layoutY="14.0" prefHeight="20.0" prefWidth="273.0" text="Vom Kunden gewählte Versandart:">
+                  <JFXButton fx:id="printLabel" layoutX="13.0" layoutY="553.0" onAction="#triggerPrintLabel" style="-fx-background-color: #dddddd;" text="Internetmarke drucken" />
+                  <JFXButton fx:id="shipItem" layoutX="13.0" layoutY="592.0" onAction="#triggerShipProduct" style="-fx-background-color: #dddddd;" text="Versenden" />
+                  <Label layoutX="16.0" layoutY="50.0" prefHeight="20.0" prefWidth="273.0" text="Vom Kunden gewählte Versandart:">
                      <font>
                         <Font size="16.0" />
                      </font>
                   </Label>
-                  <Label fx:id="selectedShippingMethod" layoutX="13.0" layoutY="42.0" prefHeight="45.0" prefWidth="263.0" textFill="RED" wrapText="true">
+                  <Label fx:id="selectedShippingMethod" layoutX="13.0" layoutY="79.0" prefHeight="45.0" prefWidth="263.0" textFill="RED" wrapText="true">
                      <font>
                         <Font size="16.0" />
                      </font>
                   </Label>
-                  <JFXButton fx:id="printAgain" layoutX="211.0" layoutY="505.0" onAction="#triggerPrintLabelAgain" style="-fx-background-color: #dddddd;" text="Erneut drucken" />
-                  <Label layoutX="211.0" layoutY="487.0" text="Fehler unterlaufen?">
+                  <JFXButton fx:id="printAgain" layoutX="211.0" layoutY="553.0" onAction="#triggerPrintLabelAgain" style="-fx-background-color: #dddddd;" text="Erneut drucken" />
+                  <Label layoutX="211.0" layoutY="535.0" text="Fehler unterlaufen?">
                      <font>
                         <Font size="9.0" />
                      </font>
                   </Label>
-                  <Label layoutX="14.0" layoutY="470.0" text="Portokasseguthaben:" />
-                  <Label fx:id="walletBalance" layoutX="152.0" layoutY="470.0" prefHeight="17.0" prefWidth="171.0" />
+                  <Label layoutX="15.0" layoutY="514.0" text="Portokasseguthaben:" />
+                  <Label fx:id="walletBalance" layoutX="152.0" layoutY="514.0" prefHeight="17.0" prefWidth="171.0" />
+                  <JFXButton fx:id="refreshButton" layoutX="14.0" layoutY="11.0" onAction="#fullRefreshOrders" style="-fx-background-color: #dddddd;" text="Refresh" />
                </children></AnchorPane>
         </items>
       </SplitPane>

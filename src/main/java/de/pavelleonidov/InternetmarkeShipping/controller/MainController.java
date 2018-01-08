@@ -97,12 +97,14 @@ public class MainController extends AbstractController {
 
     protected Map<String, Locale> localeMap;
 
+    protected boolean fullRefresh = false;
+
+    protected OrderThread orderThread;
+
     @FXML
     void initialize() {
 
-
-
-        OrderThread orderThread = new OrderThread();
+        orderThread = new OrderThread();
         orderThread.start();
 
         JFXTreeTableColumn<SalesItemTreeObject, String> productNameColumn = SalesItemColumnFactory.getInstance().createColumn("Name", "name", 200);
@@ -110,8 +112,6 @@ public class MainController extends AbstractController {
         JFXTreeTableColumn<SalesItemTreeObject, String> productSkuColumn = SalesItemColumnFactory.getInstance().createColumn("SKU", "sku", 100);
 
         orderDetailsProducts.getColumns().setAll(productNameColumn, productSkuColumn, productPriceColumn);
-
-
 
         JFXTreeTableColumn<OrderDetailsTreeObject, String> labelColumn = OrderDetailsTreeColumnFactory.getInstance().createColumn("Label", "label");
         JFXTreeTableColumn<OrderDetailsTreeObject, String> valueColumn = OrderDetailsTreeColumnFactory.getInstance().createColumn("Wert", "value", 200);
@@ -206,6 +206,17 @@ public class MainController extends AbstractController {
         }
 
 
+    }
+
+    public void fullRefreshOrders(final Event e) {
+        fullRefresh = true;
+        salesItemTreeObjects.clear();
+        orderDetailsTreeObjects.clear();
+        magentoCustomerTable.getSelectionModel().clearSelection();
+        orderTreeObjects.clear();
+
+        orderThread.interrupt();
+        orderThread.run();
     }
 
     public void showToolWindow(Event event) throws IOException {
@@ -304,7 +315,7 @@ public class MainController extends AbstractController {
                         protected void updateItem(SalesProduct t, boolean bln) {
                             super.updateItem(t, bln);
                             if(t != null) {
-                                setText(t.getName());
+                                setText(t.getName() + " (" + t.getGrossPriceValue() + " " + t.getGrossPriceCurrency() + ")");
                             }
                         }
                     };
@@ -313,7 +324,7 @@ public class MainController extends AbstractController {
 
             prodWSProducts.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
                 selectedProduct.set(newValue);
-                System.out.println(selectedProduct.get().getName());
+                //System.out.println(selectedProduct.get().getName());
             });
 
 
@@ -379,6 +390,11 @@ public class MainController extends AbstractController {
                               //  System.out.println(orders.getTotalCount());
 
                                 io.swagger.client.model.SalesDataOrderSearchResultInterface orders = null;
+
+                                if(fullRefresh) {
+                                    lastExecution = null;
+                                }
+
                                 if(lastExecution == null) {
                                     orders = orderApi.salesOrderRepositoryV1GetListGet(
                                             "status",
@@ -395,7 +411,7 @@ public class MainController extends AbstractController {
                                             "2017-12-12 00:00:00",
                                             "gt"
                                     );
-                                    System.out.println(orders.getItems());
+                                    //System.out.println(orders.getItems());
 
                                 } else {
 
@@ -460,17 +476,16 @@ public class MainController extends AbstractController {
                         LocalDateTime currentDateTime = LocalDateTime.now();
                         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
                         lastExecution = currentDateTime.format(dtf);
-
+                        fullRefresh = false;
 
                     }
                 });
 
-                System.out.println("Run!");
+              //  System.out.println("Run!");
 
                 // Sleep thread
                 try {
-                    // fuer 3 Sekunden
-                    sleep(TimeUnit.SECONDS.toMillis(15));
+                    sleep(TimeUnit.SECONDS.toMillis(30));
                 } catch (InterruptedException ex) {
                     Logger.getLogger(OrderThread.class.getName()).log(Level.SEVERE, null, ex);
                 }

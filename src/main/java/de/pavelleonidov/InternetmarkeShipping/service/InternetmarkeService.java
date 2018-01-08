@@ -136,7 +136,7 @@ public class InternetmarkeService {
 
     public String getFormattedWalletBalance() {
         int balance = getWalletBalance();
-        System.out.println(balance);
+        //System.out.println(balance);
         NumberFormat nf = NumberFormat.getCurrencyInstance(Locale.GERMANY);
         return nf.format(balance / 100.0);
     }
