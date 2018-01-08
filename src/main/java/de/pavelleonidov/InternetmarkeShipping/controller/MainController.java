@@ -54,6 +54,7 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
@@ -61,6 +62,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @FXMLController
 public class MainController extends AbstractController {
@@ -476,13 +479,16 @@ public class MainController extends AbstractController {
         io.swagger.client.model.SalesDataOrderAddressInterface address = magentoOrder.getExtensionAttributes().getShippingAssignments().get(0).getShipping().getAddress();
 
         String formattedStreet = address.getStreet().get(0);
-        String[] streetNo = formattedStreet.split(" ");
+
+        String street = parseStreet(formattedStreet);
+        String houseNumber = parseHousenumber(formattedStreet);
+
 
         int totalValue = product.getGrossPriceValue().multiply(new BigDecimal(100)).intValueExact();
 
-        String targetProduct = InternetmarkeService.getInstance().getProduct(Integer.parseInt(product.getId()), magentoOrder.getCustomerFirstname(), magentoOrder.getCustomerLastname(),address.getCompany(), address.getPostcode(), address.getCity(), streetNo[0], streetNo[1], "DEU", totalValue);
+        String targetProduct = InternetmarkeService.getInstance().getProduct(Integer.parseInt(product.getId()), magentoOrder.getCustomerFirstname(), magentoOrder.getCustomerLastname(),address.getCompany(), address.getPostcode(), address.getCity(), street, houseNumber, "DEU", totalValue);
 
-        try {
+       try {
             URL url = new URL(targetProduct);
             InputStream in = url.openStream();
             Files.copy(in, Paths.get(Main.getHomeDirectory() + "marke-" + magentoOrder.getIncrementId() + "-" + product.getId() + ".pdf"), StandardCopyOption.REPLACE_EXISTING);
@@ -514,6 +520,33 @@ public class MainController extends AbstractController {
             });
         }
 
+    }
+
+    private String parseHousenumber(String str) {
+
+
+        Matcher match = Pattern.compile("(?!\\w\\W)+[0-9]+[a-zA-Z]?").matcher(str);
+
+        if(match.find()) {
+            return match.group(0);
+        }
+        return "";
+    }
+
+    private String parseStreet(String str) {
+        // Special case: Mannheim's square city
+        Matcher matchSquare = Pattern.compile("^([a-zA-Z])\\d").matcher(str);
+        if(matchSquare.find()) {
+            return matchSquare.group(0).trim();
+        } else {
+            // All other street names, including missing whitespaces between street and house number
+            Matcher match = Pattern.compile("^([a-zA-ZäöüÄÖÜß.\\-\\s])+(?=[0-9])").matcher(str);
+
+            if (match.find()) {
+                return match.group(0).trim();
+            }
+            return "";
+        }
     }
 
 }
