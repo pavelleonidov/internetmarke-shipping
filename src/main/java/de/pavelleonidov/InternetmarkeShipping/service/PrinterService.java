@@ -158,45 +158,39 @@ public class PrinterService {
 
         PrinterAttributes attributes = printer.getPrinterAttributes();
 
+        Paper label = attributes.getDefaultPaper();
 
-        //  System.out.printf("\nLabel Size: %g, %g(%s)\n", attributes.getDefaultPaper().getWidth(), attributes.getDefaultPaper().getHeight(), attributes.getDefaultPaper().toString());
+        PageLayout layout = getCurrentPrinter().getDefaultPageLayout();
 
-         Paper label = attributes.getDefaultPaper();
-        //   Paper label = Paper.MONARCH_ENVELOPE;
-       // Paper label = PrintHelper.createPaper("LabelPrinter", 29, 90, Units.MM);
-
-
-      //  Paper label = attributes.getDefaultPaper();
-
-
-        //   System.out.println(label);
-        //PageOrientation orientation = attributes.getDefaultPageOrientation();
-        PageOrientation orientation = PageOrientation.LANDSCAPE;
-
-        PageLayout layout = printer.createPageLayout(label, orientation, Printer.MarginType.HARDWARE_MINIMUM);
-
+        if(getSettings().isLabelPrinter()) {
+            PageOrientation orientation = PageOrientation.LANDSCAPE;
+            layout = printer.createPageLayout(label, orientation, Printer.MarginType.HARDWARE_MINIMUM);
+        }
 
         try {
 
             BufferedImage image = pdfRenderer.renderImageWithDPI(0, 300, ImageType.RGB);
            // BufferedImage imagePart = image.getSubimage(50,50, (int) label.getWidth(), (int) label.getHeight() );
-            System.out.println(image.getWidth());
-            BufferedImage imagePart = image.getSubimage(150,350, 1000, 380);
 
-            convertedImage = SwingFXUtils.toFXImage(imagePart, null);
+            if(getSettings().isLabelPrinter()) {
+                BufferedImage imagePart = image.getSubimage(150,350, 1000, 380);
+                convertedImage = SwingFXUtils.toFXImage(imagePart, null);
 
-            imageView.setImage(convertedImage);
+                imageView.setImage(convertedImage);
 
-          //  imageView.setFitWidth(layout.getPrintableWidth());
-         //   imageView.setFitHeight(layout.getPrintableHeight());
-             double scaleX = layout.getPrintableWidth() / convertedImage.getWidth();
-             double scaleY = layout.getPrintableHeight() / convertedImage.getHeight();
+                double scaleX = layout.getPrintableWidth() / convertedImage.getWidth();
+                double scaleY = layout.getPrintableHeight() / convertedImage.getHeight();
 
-             double minimumScale = Math.min(scaleX, scaleY);
-             System.out.println(minimumScale);
-             imageView.getTransforms().add(new Scale(minimumScale, minimumScale));
-            // imageView.setFitWidth(layout.getPrintableWidth());
-            // imageView.setFitHeight(layout.getPrintableHeight());
+                double minimumScale = Math.min(scaleX, scaleY);
+
+                imageView.getTransforms().add(new Scale(minimumScale, minimumScale));
+            } else {
+                imageView.setImage(SwingFXUtils.toFXImage(image, null));
+                imageView.setFitWidth(layout.getPrintableWidth());
+                imageView.setFitHeight(layout.getPrintableHeight());
+            }
+
+
 
 
             if (job != null)

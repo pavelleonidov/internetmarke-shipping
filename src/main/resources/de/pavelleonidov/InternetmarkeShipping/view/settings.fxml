@@ -237,7 +237,7 @@
                   <JFXTextField fx:id="senderCity" prefHeight="25.0" prefWidth="243.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
                </children>
             </GridPane>
-            <JFXCheckBox layoutX="547.0" layoutY="744.0" text="Etikettendrucker" />
+            <JFXCheckBox fx:id="checkLabelPrinter" layoutX="547.0" layoutY="744.0" onAction="#checkLabelPrinter" text="Etikettendrucker" />
          </children></AnchorPane>
   </content>
 </ScrollPane>

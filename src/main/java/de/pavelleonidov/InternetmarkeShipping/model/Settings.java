@@ -30,6 +30,7 @@ public class Settings {
     private String senderCity;
 
     private int currentPrinter;
+    private boolean isLabelPrinter;
 
     public String getMagento2ApiUrl() {
         return magento2ApiUrl;
@@ -175,4 +176,11 @@ public class Settings {
         this.senderStreet = senderStreet;
     }
 
+    public boolean isLabelPrinter() {
+        return isLabelPrinter;
+    }
+
+    public void setLabelPrinter(boolean labelPrinter) {
+        isLabelPrinter = labelPrinter;
+    }
 }

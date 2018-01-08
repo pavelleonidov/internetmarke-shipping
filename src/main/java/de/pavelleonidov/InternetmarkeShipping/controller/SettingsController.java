@@ -128,6 +128,8 @@ public class SettingsController {
     @FXML
     private JFXTextField senderCity;
 
+    @FXML
+    private JFXCheckBox checkLabelPrinter;
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("ddMMyyyy-HHmmss");
 
@@ -167,6 +169,7 @@ public class SettingsController {
         senderCity.setText(getSettings().getSenderCity());
         senderHouseNumber.setText(getSettings().getSenderHouseNumber());
         senderStreet.setText(getSettings().getSenderStreet());
+        checkLabelPrinter.setSelected(getSettings().isLabelPrinter());
 
         printerSelect.getSelectionModel().select(getSettings().getCurrentPrinter());
 
@@ -283,6 +286,11 @@ public class SettingsController {
         ProdWSSalesProductService.getInstance().saveProducts();
     }
 
+    public void checkLabelPrinter(final Event e) {
+        fillSettingsModel();
+
+    }
+
     private void fillSettingsModel() {
         settings.setMagento2AccessToken(magentoAccessTokenLabel.getText());
         settings.setMagento2ApiUrl(magentoApiUrlLabel.getText());
@@ -295,6 +303,7 @@ public class SettingsController {
         settings.setPcfOneClickPartnerId(pcfOneClickPartnerId.getText());
         settings.setPcfOneClickPartnerSignature(pcfOneClickPartnerSignature.getText());
         settings.setCurrentPrinter(printerSelect.getSelectionModel().getSelectedItem().getIdentifier());
+        settings.setLabelPrinter(checkLabelPrinter.isSelected());
 
         settings.setSenderForename(senderForeName.getText());
         settings.setSenderSurname(senderSurName.getText());
