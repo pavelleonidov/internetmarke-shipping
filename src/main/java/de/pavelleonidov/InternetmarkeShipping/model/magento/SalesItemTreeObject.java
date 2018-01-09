@@ -21,6 +21,7 @@ public class SalesItemTreeObject extends TreeObject<SalesItemTreeObject> {
         setName(product.getName());
         setSku(product.getSku());
         setPrice(product.getBaseOriginalPrice().toString());
+        setQuantity(product.getQtyOrdered().toString());
 
     }
 
@@ -41,6 +42,15 @@ public class SalesItemTreeObject extends TreeObject<SalesItemTreeObject> {
     public void setPrice(String price) {
 
         setProperty("price", price);
+    }
+
+    public StringProperty getQuantity() {
+        return getProperty("quantity");
+    }
+
+    public void setQuantity(String quantity) {
+
+        setProperty("quantity", quantity);
     }
 
     public StringProperty getName() {

@@ -110,8 +110,9 @@ public class MainController extends AbstractController {
         JFXTreeTableColumn<SalesItemTreeObject, String> productNameColumn = SalesItemColumnFactory.getInstance().createColumn("Name", "name", 200);
         JFXTreeTableColumn<SalesItemTreeObject, String> productPriceColumn = SalesItemColumnFactory.getInstance().createColumn("Preis", "price", 120);
         JFXTreeTableColumn<SalesItemTreeObject, String> productSkuColumn = SalesItemColumnFactory.getInstance().createColumn("SKU", "sku", 100);
+        JFXTreeTableColumn<SalesItemTreeObject, String> productQuantityColumn = SalesItemColumnFactory.getInstance().createColumn("Stückzahl", "quantity", 100);
 
-        orderDetailsProducts.getColumns().setAll(productNameColumn, productSkuColumn, productPriceColumn);
+        orderDetailsProducts.getColumns().setAll(productNameColumn, productSkuColumn, productPriceColumn, productQuantityColumn);
 
         JFXTreeTableColumn<OrderDetailsTreeObject, String> labelColumn = OrderDetailsTreeColumnFactory.getInstance().createColumn("Label", "label");
         JFXTreeTableColumn<OrderDetailsTreeObject, String> valueColumn = OrderDetailsTreeColumnFactory.getInstance().createColumn("Wert", "value", 200);
@@ -198,7 +199,7 @@ public class MainController extends AbstractController {
             orderTreeObjects.removeAll(selectedOrderObservable.getValue());
 //            selectedOrderObservable.getParent().getChildren().remove(selectedOrderObservable);
 
-            cleanLabelFiles();
+          //  cleanLabelFiles();
             selectedOrderObservable = null;
 
 
