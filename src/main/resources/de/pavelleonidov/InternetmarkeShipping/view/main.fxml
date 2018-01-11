@@ -15,7 +15,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox prefHeight="679.0" prefWidth="1197.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.pavelleonidov.InternetmarkeShipping.controller.MainController">
+<VBox prefHeight="738.0" prefWidth="1193.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.pavelleonidov.InternetmarkeShipping.controller.MainController">
    <children>
       <MenuBar VBox.vgrow="NEVER">
         <menus>
@@ -47,8 +47,8 @@
                            <children>
                               <GridPane layoutX="14.0" layoutY="51.0" prefHeight="223.0" prefWidth="820.0" AnchorPane.bottomAnchor="14.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="49.0">
                                 <columnConstraints>
-                                  <ColumnConstraints hgrow="SOMETIMES" maxWidth="538.0" minWidth="10.0" prefWidth="530.0" />
-                                  <ColumnConstraints hgrow="SOMETIMES" maxWidth="406.0" minWidth="10.0" prefWidth="290.0" />
+                                  <ColumnConstraints hgrow="SOMETIMES" maxWidth="538.0" minWidth="10.0" prefWidth="462.0" />
+                                  <ColumnConstraints hgrow="SOMETIMES" maxWidth="406.0" minWidth="10.0" prefWidth="358.0" />
                                 </columnConstraints>
                                 <rowConstraints>
                                   <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
@@ -56,12 +56,13 @@
                                  <children>
                                     <AnchorPane prefHeight="141.0" prefWidth="309.0" styleClass="detail-anchor" stylesheets="@style.css">
                                        <children>
-                                          <JFXTreeTableView fx:id="orderDetailsProducts" styleClass="article-detail" stylesheets="@style.css" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="2.0" />
+                                          <JFXTreeTableView fx:id="orderDetailsProducts" prefWidth="499.0" styleClass="article-detail" stylesheets="@style.css" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="2.0" />
                                        </children>
                                     </AnchorPane>
                                     <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
                                        <children>
-                                          <JFXTreeTableView fx:id="orderDetailsShipping" styleClass="customer-detail" stylesheets="@style.css" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="2.0" />
+                                          <JFXTreeTableView fx:id="orderDetailsShipping" prefHeight="186.0" prefWidth="286.0" styleClass="customer-detail" stylesheets="@style.css" AnchorPane.bottomAnchor="37.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="2.0" />
+                                          <JFXButton layoutX="14.0" layoutY="191.0" onAction="#showCustomerAddressView" prefHeight="36.0" prefWidth="290.0" style="-fx-background-color: #ddd;" text="Bearbeiten" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
                                        </children>
                                     </AnchorPane>
                                  </children>
@@ -71,7 +72,7 @@
                                     <Font size="16.0" />
                                  </font>
                               </Label>
-                              <Label layoutX="424.0" layoutY="14.0" prefHeight="22.0" prefWidth="263.0" text="Kundeninformationen:">
+                              <Label layoutX="479.0" layoutY="14.0" prefHeight="22.0" prefWidth="263.0" text="Kundeninformationen:">
                                  <font>
                                     <Font size="16.0" />
                                  </font>

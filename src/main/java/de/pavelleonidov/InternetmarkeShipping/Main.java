@@ -1,7 +1,11 @@
 package de.pavelleonidov.InternetmarkeShipping;
 
+import de.felixroske.jfxsupport.AbstractFxmlView;
 import de.pavelleonidov.InternetmarkeShipping.view.MainView;
 import de.felixroske.jfxsupport.AbstractJavaFxApplicationSupport;
+import javafx.scene.Scene;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import org.apache.commons.io.FileUtils;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -34,4 +38,8 @@ public class Main extends AbstractJavaFxApplicationSupport {
 	public static String getHomeDirectory() {
 		return homeDirectory;
 	}
+
+
+
+
 }

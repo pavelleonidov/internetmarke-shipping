@@ -47,7 +47,7 @@ import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @FXMLController
-public class SettingsController {
+public class SettingsController extends AbstractController {
 
 
     @FXML

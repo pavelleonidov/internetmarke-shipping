@@ -58,7 +58,10 @@ public class ColumnFactory<T extends TreeObject> {
                     @Override
                     public void updateItem(String item, boolean empty) {
                         super.updateItem(item, empty);
-                        if(!isEmpty()) {
+                        if(empty || item == null) {
+                            setText(null);
+                            setGraphic(null);
+                        } else {
                             text = new Text(item);
                             text.setWrappingWidth(column.getWidth());
                             this.setWrapText(true);

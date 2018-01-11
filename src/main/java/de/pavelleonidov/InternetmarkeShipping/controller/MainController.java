@@ -1,5 +1,6 @@
 package de.pavelleonidov.InternetmarkeShipping.controller;
 
+import de.felixroske.jfxsupport.AbstractFxmlView;
 import de.pavelleonidov.InternetmarkeShipping.Main;
 import de.pavelleonidov.InternetmarkeShipping.model.magento.OrderDetailsTreeObject;
 import de.pavelleonidov.InternetmarkeShipping.model.magento.OrderTreeObject;
@@ -12,6 +13,7 @@ import de.pavelleonidov.InternetmarkeShipping.service.ProdWSSalesProductService;
 import de.pavelleonidov.InternetmarkeShipping.utility.magento.OrderDetailsTreeColumnFactory;
 import de.pavelleonidov.InternetmarkeShipping.utility.magento.OrderTreeColumnFactory;
 import de.pavelleonidov.InternetmarkeShipping.utility.magento.SalesItemColumnFactory;
+
 import de.pavelleonidov.InternetmarkeShipping.view.SettingsView;
 import com.jfoenix.controls.JFXListView;
 import com.jfoenix.controls.JFXTreeTableColumn;
@@ -28,12 +30,15 @@ import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.Event;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TreeItem;
 import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import org.apache.pdfbox.pdmodel.PDDocument;
 
 import java.io.File;
@@ -57,10 +62,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @FXMLController
 public class MainController extends AbstractController {
@@ -83,23 +90,29 @@ public class MainController extends AbstractController {
     @FXML
     private Label selectedShippingMethod;
 
+    private static boolean showNonPaid = true;
+
     protected AtomicReference<SalesProduct> selectedProduct;
 
-    protected AtomicReference<io.swagger.client.model.SalesDataOrderInterface> selectedOrder;
+    protected static AtomicReference<io.swagger.client.model.SalesDataOrderInterface> selectedOrder;
 
     protected TreeItem<OrderTreeObject> selectedOrderObservable;
 
     protected ObservableList<OrderTreeObject> orderTreeObjects;
 
-    protected ObservableList<OrderDetailsTreeObject> orderDetailsTreeObjects = FXCollections.observableArrayList();
+    protected ObservableList<OrderDetailsTreeObject> orderDetailsTreeObjects;
 
-    protected ObservableList<SalesItemTreeObject> salesItemTreeObjects = FXCollections.observableArrayList();
+    protected ObservableList<SalesItemTreeObject> salesItemTreeObjects;
 
     protected Map<String, Locale> localeMap;
 
     protected boolean fullRefresh = false;
 
     protected OrderThread orderThread;
+
+    TreeItem<OrderDetailsTreeObject> rootDetailOrder;
+
+    TreeItem<SalesItemTreeObject> rootProduct;
 
     @FXML
     void initialize() {
@@ -108,9 +121,9 @@ public class MainController extends AbstractController {
         orderThread.start();
 
         JFXTreeTableColumn<SalesItemTreeObject, String> productNameColumn = SalesItemColumnFactory.getInstance().createColumn("Name", "name", 200);
-        JFXTreeTableColumn<SalesItemTreeObject, String> productPriceColumn = SalesItemColumnFactory.getInstance().createColumn("Preis", "price", 120);
+        JFXTreeTableColumn<SalesItemTreeObject, String> productPriceColumn = SalesItemColumnFactory.getInstance().createColumn("Preis", "price", 80);
         JFXTreeTableColumn<SalesItemTreeObject, String> productSkuColumn = SalesItemColumnFactory.getInstance().createColumn("SKU", "sku", 100);
-        JFXTreeTableColumn<SalesItemTreeObject, String> productQuantityColumn = SalesItemColumnFactory.getInstance().createColumn("Stückzahl", "quantity", 100);
+        JFXTreeTableColumn<SalesItemTreeObject, String> productQuantityColumn = SalesItemColumnFactory.getInstance().createColumn("Stückzahl", "quantity", 50);
 
         orderDetailsProducts.getColumns().setAll(productNameColumn, productSkuColumn, productPriceColumn, productQuantityColumn);
 
@@ -193,15 +206,16 @@ public class MainController extends AbstractController {
                     shipBody
             );
 
-            salesItemTreeObjects.clear();
-            orderDetailsTreeObjects.clear();
-            magentoCustomerTable.getSelectionModel().clearSelection();
-            orderTreeObjects.removeAll(selectedOrderObservable.getValue());
-//            selectedOrderObservable.getParent().getChildren().remove(selectedOrderObservable);
+            //salesItemTreeObjects.clear();
 
-          //  cleanLabelFiles();
-            selectedOrderObservable = null;
 
+          //  orderDetailsProducts.getRoot().getChildren().clear();
+          //  magentoCustomerTable.getSelectionModel().clearSelection();
+          //  orderTreeObjects.removeAll(selectedOrderObservable.getValue());
+
+         //   selectedOrderObservable = null;
+
+            cleanDetailViews();
 
         } catch (ApiException e1) {
             e1.printStackTrace();
@@ -212,10 +226,8 @@ public class MainController extends AbstractController {
 
     public void fullRefreshOrders(final Event e) {
         fullRefresh = true;
-        salesItemTreeObjects.clear();
-        orderDetailsTreeObjects.clear();
-        magentoCustomerTable.getSelectionModel().clearSelection();
-        orderTreeObjects.clear();
+
+        cleanAllViews();
 
         orderThread.interrupt();
         orderThread.run();
@@ -223,6 +235,25 @@ public class MainController extends AbstractController {
 
     public void showToolWindow(Event event) throws IOException {
         Main.showView(SettingsView.class, Modality.NONE);
+
+    }
+
+
+    public void showCustomerAddressView(Event event) throws IOException {
+
+        //Main.showView(CustomerAddressView.class, Modality.APPLICATION_MODAL);
+        Stage customerDetailStage = loadDependentView("customeraddress.fxml");
+        customerDetailStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            @Override
+            public void handle(WindowEvent windowEvent) {
+                fullRefreshOrders(event);
+            }
+        });
+
+    }
+
+    public static AtomicReference<io.swagger.client.model.SalesDataOrderInterface> getCurrentOrder() {
+        return selectedOrder;
     }
 
     public class OrderThread extends Thread {
@@ -258,6 +289,8 @@ public class MainController extends AbstractController {
             magentoCustomerTable.getColumns().setAll(orderIdColumn, customerNameColumn, channelColumn, paymentMethodColumn, statusColumn, createdAtColumn);
 
             orderTreeObjects = FXCollections.observableArrayList();
+            orderDetailsTreeObjects = FXCollections.observableArrayList();
+            salesItemTreeObjects = FXCollections.observableArrayList();
 
             magentoCustomerTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
 
@@ -292,12 +325,12 @@ public class MainController extends AbstractController {
                     selectedOrder.set(newValue.getValue().getResponseOrder());
                     // System.out.println(selectedOrder.get().getIncrementId());
 
-                    final TreeItem<SalesItemTreeObject> rootProduct = new RecursiveTreeItem<SalesItemTreeObject>(salesItemTreeObjects, RecursiveTreeObject::getChildren);
+                    rootProduct = new RecursiveTreeItem<SalesItemTreeObject>(salesItemTreeObjects, RecursiveTreeObject::getChildren);
                     orderDetailsProducts.setRoot(rootProduct);
                     orderDetailsProducts.setShowRoot(false);
 
 
-                    final TreeItem<OrderDetailsTreeObject> rootDetailOrder = new RecursiveTreeItem<OrderDetailsTreeObject>(orderDetailsTreeObjects, RecursiveTreeObject::getChildren);
+                    rootDetailOrder = new RecursiveTreeItem<OrderDetailsTreeObject>(orderDetailsTreeObjects, RecursiveTreeObject::getChildren);
                     orderDetailsShipping.setRoot(rootDetailOrder);
                     orderDetailsShipping.setShowRoot(false);
 
@@ -396,6 +429,7 @@ public class MainController extends AbstractController {
                                 io.swagger.client.model.SalesDataOrderSearchResultInterface orders = null;
 
                                 if(fullRefresh) {
+                                    cleanAllViews();
                                     lastExecution = null;
                                 }
 
@@ -481,7 +515,6 @@ public class MainController extends AbstractController {
                         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
                         lastExecution = currentDateTime.format(dtf);
                         fullRefresh = false;
-
                     }
                 });
 
@@ -553,6 +586,24 @@ public class MainController extends AbstractController {
 
     }
 
+    protected void cleanAllViews() {
+        orderTreeObjects.clear();
+        cleanDetailViews();
+    }
+
+    protected void cleanDetailViews() {
+        salesItemTreeObjects.clear();
+        orderDetailsTreeObjects.clear();
+
+        orderDetailsProducts.getRoot().getChildren().clear();
+        magentoCustomerTable.getSelectionModel().clearSelection();
+        if(selectedOrderObservable != null) {
+            orderTreeObjects.removeAll(selectedOrderObservable.getValue());
+        }
+
+        selectedOrderObservable = null;
+    }
+
     private String parseHousenumber(String str) {
 
 
@@ -585,5 +636,11 @@ public class MainController extends AbstractController {
         return locale.getISO3Country();
     }
 
+    public static boolean isShowNonPaid() {
+        return showNonPaid;
+    }
 
+    public static void setShowNonPaid(boolean showNonPaid) {
+        MainController.showNonPaid = showNonPaid;
+    }
 }
