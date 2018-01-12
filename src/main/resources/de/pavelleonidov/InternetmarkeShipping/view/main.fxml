@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import com.jfoenix.controls.JFXButton?>
+<?import com.jfoenix.controls.JFXCheckBox?>
 <?import com.jfoenix.controls.JFXListView?>
 <?import com.jfoenix.controls.JFXTreeTableView?>
 <?import javafx.scene.control.Label?>
@@ -116,6 +117,8 @@
                   <Label layoutX="15.0" layoutY="514.0" text="Portokasseguthaben:" />
                   <Label fx:id="walletBalance" layoutX="152.0" layoutY="514.0" prefHeight="17.0" prefWidth="171.0" />
                   <JFXButton fx:id="refreshButton" layoutX="14.0" layoutY="11.0" onAction="#fullRefreshOrders" style="-fx-background-color: #dddddd;" text="Refresh" />
+                  <JFXCheckBox fx:id="buttonDisablePendingOrders" layoutX="16.0" layoutY="631.0" text="Nicht bezahlte Bestellungen ausblenden" />
+                  <JFXButton layoutX="108.0" layoutY="592.0" onAction="#cancelOrder" style="-fx-background-color: #ddd;" text="Bestellung abbrechen" />
                </children></AnchorPane>
         </items>
       </SplitPane>

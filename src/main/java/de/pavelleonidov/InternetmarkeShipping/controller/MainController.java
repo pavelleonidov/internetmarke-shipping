@@ -1,5 +1,6 @@
 package de.pavelleonidov.InternetmarkeShipping.controller;
 
+import com.jfoenix.controls.*;
 import de.felixroske.jfxsupport.AbstractFxmlView;
 import de.pavelleonidov.InternetmarkeShipping.Main;
 import de.pavelleonidov.InternetmarkeShipping.model.magento.OrderDetailsTreeObject;
@@ -15,17 +16,16 @@ import de.pavelleonidov.InternetmarkeShipping.utility.magento.OrderTreeColumnFac
 import de.pavelleonidov.InternetmarkeShipping.utility.magento.SalesItemColumnFactory;
 
 import de.pavelleonidov.InternetmarkeShipping.view.SettingsView;
-import com.jfoenix.controls.JFXListView;
-import com.jfoenix.controls.JFXTreeTableColumn;
-import com.jfoenix.controls.JFXTreeTableView;
-import com.jfoenix.controls.RecursiveTreeItem;
 import com.jfoenix.controls.datamodels.treetable.RecursiveTreeObject;
 import de.felixroske.jfxsupport.FXMLController;
 import io.swagger.client.ApiException;
 import io.swagger.client.api.CustomerAddressRepositoryV1Api;
+import io.swagger.client.api.SalesOrderManagementV1Api;
 import io.swagger.client.api.SalesShipOrderV1Api;
 import io.swagger.client.model.Body99;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -90,7 +90,10 @@ public class MainController extends AbstractController {
     @FXML
     private Label selectedShippingMethod;
 
-    private static boolean showNonPaid = true;
+    @FXML
+    private JFXCheckBox buttonDisablePendingOrders;
+
+    private boolean showNonPaid = true;
 
     protected AtomicReference<SalesProduct> selectedProduct;
 
@@ -104,7 +107,6 @@ public class MainController extends AbstractController {
 
     protected ObservableList<SalesItemTreeObject> salesItemTreeObjects;
 
-    protected Map<String, Locale> localeMap;
 
     protected boolean fullRefresh = false;
 
@@ -133,6 +135,14 @@ public class MainController extends AbstractController {
         orderDetailsShipping.getColumns().setAll(labelColumn, valueColumn);
 
         walletBalance.setText(InternetmarkeService.getInstance().getFormattedWalletBalance());
+
+        buttonDisablePendingOrders.selectedProperty().addListener(new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                setShowNonPaid(oldValue);
+                fullRefreshOrders(null);
+            }
+        });
 
     }
 
@@ -206,15 +216,6 @@ public class MainController extends AbstractController {
                     shipBody
             );
 
-            //salesItemTreeObjects.clear();
-
-
-          //  orderDetailsProducts.getRoot().getChildren().clear();
-          //  magentoCustomerTable.getSelectionModel().clearSelection();
-          //  orderTreeObjects.removeAll(selectedOrderObservable.getValue());
-
-         //   selectedOrderObservable = null;
-
             cleanDetailViews();
 
         } catch (ApiException e1) {
@@ -223,6 +224,26 @@ public class MainController extends AbstractController {
 
 
     }
+
+    public void cancelOrder(Event event) {
+        io.swagger.client.model.SalesDataOrderInterface currentOrder = getCurrentOrder().get();
+
+        io.swagger.client.api.SalesOrderManagementV1Api salesOrderManagement = new SalesOrderManagementV1Api();
+        salesOrderManagement.getApiClient().setAccessToken(SettingsController.getSettings().getMagento2AccessToken());
+        salesOrderManagement.getApiClient().setBasePath(SettingsController.getSettings().getMagento2ApiUrl());
+        salesOrderManagement.getApiClient().getHttpClient().setReadTimeout(30, TimeUnit.SECONDS);
+
+        try {
+            salesOrderManagement.salesOrderManagementV1CancelPost(currentOrder.getEntityId());
+            fullRefreshOrders(event);
+        } catch (ApiException e) {
+            e.printStackTrace();
+            System.out.println(e.getResponseBody());
+        }
+
+    }
+
+
 
     public void fullRefreshOrders(final Event e) {
         fullRefresh = true;
@@ -442,9 +463,9 @@ public class MainController extends AbstractController {
                                             "asc",
                                             100,
                                             1,
-                                            "status",
-                                            "pending",
-                                            "eq",
+                                            isShowNonPaid() ? "status" : null,
+                                            isShowNonPaid() ? "pending" : null,
+                                            isShowNonPaid() ? "eq" : null,
                                             "created_at",
                                             "2018-01-08 00:00:00",
                                             "gt"
@@ -474,9 +495,9 @@ public class MainController extends AbstractController {
                                             "asc",
                                             100,
                                             1,
-                                            "status",
-                                            "pending",
-                                            "eq",
+                                            isShowNonPaid() ? "status" : null,
+                                            isShowNonPaid() ? "pending" : null,
+                                            isShowNonPaid() ? "eq" : null,
                                             "created_at",
                                             targetFormat.format(dateTime),
                                             "gt"
@@ -595,7 +616,7 @@ public class MainController extends AbstractController {
         salesItemTreeObjects.clear();
         orderDetailsTreeObjects.clear();
 
-        orderDetailsProducts.getRoot().getChildren().clear();
+        if(orderDetailsProducts.getRoot() != null) orderDetailsProducts.getRoot().getChildren().clear();
         magentoCustomerTable.getSelectionModel().clearSelection();
         if(selectedOrderObservable != null) {
             orderTreeObjects.removeAll(selectedOrderObservable.getValue());
@@ -636,11 +657,11 @@ public class MainController extends AbstractController {
         return locale.getISO3Country();
     }
 
-    public static boolean isShowNonPaid() {
+    public boolean isShowNonPaid() {
         return showNonPaid;
     }
 
-    public static void setShowNonPaid(boolean showNonPaid) {
-        MainController.showNonPaid = showNonPaid;
+    public void setShowNonPaid(boolean showNonPaid) {
+        this.showNonPaid = showNonPaid;
     }
 }
