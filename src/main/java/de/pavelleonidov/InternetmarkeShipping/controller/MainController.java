@@ -60,7 +60,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.logging.Level;
@@ -110,17 +110,25 @@ public class MainController extends AbstractController {
 
     protected boolean fullRefresh = false;
 
-    protected OrderThread orderThread;
 
     TreeItem<OrderDetailsTreeObject> rootDetailOrder;
 
     TreeItem<SalesItemTreeObject> rootProduct;
 
+    private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(r -> {
+        Thread thread = Executors.defaultThreadFactory().newThread(r);
+        thread.setDaemon(true);
+        return thread;
+    });
+
+    private ScheduledFuture scheduledFuture;
+
+    protected OrderThread orderThread;
+
     @FXML
     void initialize() {
 
-        orderThread = new OrderThread();
-        orderThread.start();
+        startThread();
 
         JFXTreeTableColumn<SalesItemTreeObject, String> productNameColumn = SalesItemColumnFactory.getInstance().createColumn("Name", "name", 200);
         JFXTreeTableColumn<SalesItemTreeObject, String> productPriceColumn = SalesItemColumnFactory.getInstance().createColumn("Preis", "price", 80);
@@ -144,6 +152,25 @@ public class MainController extends AbstractController {
             }
         });
 
+    }
+
+    private void startTask() {
+
+        if(orderThread == null) {
+            orderThread = new OrderThread();
+            orderThread.setDaemon(true);
+        }
+        scheduledFuture = executor.scheduleAtFixedRate(orderThread, 0, 30, TimeUnit.SECONDS);
+    }
+
+     private void startThread() {
+        if (scheduledFuture == null) {
+            // nothing running currently
+            startTask();
+        } else {
+            scheduledFuture.cancel(true);
+            startTask();
+        }
     }
 
     public void triggerPrintLabel(final Event e) {
@@ -247,11 +274,8 @@ public class MainController extends AbstractController {
 
     public void fullRefreshOrders(final Event e) {
         fullRefresh = true;
-
         cleanAllViews();
-
-        orderThread.interrupt();
-        orderThread.run();
+        startThread();
     }
 
     public void showToolWindow(Event event) throws IOException {
@@ -291,6 +315,8 @@ public class MainController extends AbstractController {
 
         private String lastExecution;
 
+        private io.swagger.client.api.SalesOrderRepositoryV1Api orderApi = new io.swagger.client.api.SalesOrderRepositoryV1Api();
+
         public OrderThread() {
 
             setDaemon(true);
@@ -312,6 +338,18 @@ public class MainController extends AbstractController {
             orderTreeObjects = FXCollections.observableArrayList();
             orderDetailsTreeObjects = FXCollections.observableArrayList();
             salesItemTreeObjects = FXCollections.observableArrayList();
+
+            if(SettingsController.getSettings().getMagento2AccessToken() != null) {
+                orderApi.getApiClient().setAccessToken(SettingsController.getSettings().getMagento2AccessToken());
+                orderApi.getApiClient().setBasePath(SettingsController.getSettings().getMagento2ApiUrl());
+                orderApi.getApiClient().getHttpClient().setReadTimeout(30, TimeUnit.SECONDS);
+
+                DateFormat localDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+                localDateFormat.setTimeZone(TimeZone.getTimeZone(ZoneId.of("Europe/Berlin")));
+
+                orderApi.getApiClient().setDatetimeFormat(localDateFormat);
+                orderApi.getApiClient().setDateFormat(localDateFormat);
+            }
 
             magentoCustomerTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
 
@@ -392,162 +430,145 @@ public class MainController extends AbstractController {
         @Override
         public void run() {
 
-            while (!this.isInterrupted()) {
+     //       while (!this.isInterrupted()) {
 
                 // UI updaten
-                Platform.runLater(new Runnable() {
-                    @Override
-                    public void run() {
+                Platform.runLater(() -> {
 
 
-
-                        io.swagger.client.api.SalesOrderRepositoryV1Api orderApi = new io.swagger.client.api.SalesOrderRepositoryV1Api();
-                        // http://allabout-apple.com/rest/default/V1/orders?searchCriteria[filter_groups][0][filters][0][condition_type]=eq&searchCriteria[filter_groups][0][filters][0][field]=status&searchCriteria[sortOrders][0][field]=created_at&searchCriteria[sortOrders][0][direction]=desc&searchCriteria[filter_groups][0][filters][0][value]=processing
+                    // http://allabout-apple.com/rest/default/V1/orders?searchCriteria[filter_groups][0][filters][0][condition_type]=eq&searchCriteria[filter_groups][0][filters][0][field]=status&searchCriteria[sortOrders][0][field]=created_at&searchCriteria[sortOrders][0][direction]=desc&searchCriteria[filter_groups][0][filters][0][value]=processing
 
 
-                        if(SettingsController.getSettings().getMagento2AccessToken() != null) {
-                            orderApi.getApiClient().setAccessToken(SettingsController.getSettings().getMagento2AccessToken());
-                            orderApi.getApiClient().setBasePath(SettingsController.getSettings().getMagento2ApiUrl());
-                            orderApi.getApiClient().getHttpClient().setReadTimeout(30, TimeUnit.SECONDS);
+                    if(SettingsController.getSettings().getMagento2AccessToken() != null) {
+
+                        try {
+                            //io.swagger.client.model.SalesDataOrderInterface order = orderApi.salesOrderRepositoryV1GetGet(1);
 
 
-                            DateFormat localDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-                            localDateFormat.setTimeZone(TimeZone.getTimeZone(ZoneId.of("Europe/Berlin")));
+                            /*FrameworkSearchCriteriaInterface searchCriteria = new FrameworkSearchCriteriaInterface();
+                            FrameworkSearchFilterGroup searchFilterGroup = new FrameworkSearchFilterGroup();
+                            FrameworkFilter frameworkFilter = new FrameworkFilter();
 
-                            orderApi.getApiClient().setDatetimeFormat(localDateFormat);
-                            orderApi.getApiClient().setDateFormat(localDateFormat);
-                            try {
-                                //io.swagger.client.model.SalesDataOrderInterface order = orderApi.salesOrderRepositoryV1GetGet(1);
+                            frameworkFilter.setField("status");
+                            frameworkFilter.setValue("processing");
+                            frameworkFilter.setConditionType("eq");
 
-
-
-
-
-			/*FrameworkSearchCriteriaInterface searchCriteria = new FrameworkSearchCriteriaInterface();
-			FrameworkSearchFilterGroup searchFilterGroup = new FrameworkSearchFilterGroup();
-			FrameworkFilter frameworkFilter = new FrameworkFilter();
-
-			frameworkFilter.setField("status");
-			frameworkFilter.setValue("processing");
-			frameworkFilter.setConditionType("eq");
-
-			FrameworkSortOrder sortOrder = new FrameworkSortOrder();
-			sortOrder.setField("created_at");
-			sortOrder.setDirection("desc");
+                            FrameworkSortOrder sortOrder = new FrameworkSortOrder();
+                            sortOrder.setField("created_at");
+                            sortOrder.setDirection("desc");
 
 
-			searchFilterGroup.addFiltersItem(frameworkFilter);
-			searchCriteria.addSortOrdersItem(sortOrder);
-			searchCriteria.setPageSize(20);
-			searchCriteria.setCurrentPage(1);
+                            searchFilterGroup.addFiltersItem(frameworkFilter);
+                            searchCriteria.addSortOrdersItem(sortOrder);
+                            searchCriteria.setPageSize(20);
+                            searchCriteria.setCurrentPage(1);
 
-			orders.setSearchCriteria(searchCriteria);*/
+                            orders.setSearchCriteria(searchCriteria);*/
 
-                                //		searchCriteria.addFilterGroupsItem(new FrameworkSearchFilterGroup().)
-                                //orders.setSearchCriteria();
-                              //  System.out.println(orders.getTotalCount());
+                                                //		searchCriteria.addFilterGroupsItem(new FrameworkSearchFilterGroup().)
+                                                //orders.setSearchCriteria();
+                                              //  System.out.println(orders.getTotalCount());
 
-                                io.swagger.client.model.SalesDataOrderSearchResultInterface orders = null;
+                            io.swagger.client.model.SalesDataOrderSearchResultInterface orders = null;
 
-                                if(fullRefresh) {
-                                    cleanAllViews();
-                                    lastExecution = null;
-                                }
-
-                                if(lastExecution == null) {
-                                    orders = orderApi.salesOrderRepositoryV1GetListGet(
-                                            "status",
-                                            "processing",
-                                            "eq",
-                                            "created_at",
-                                            "asc",
-                                            100,
-                                            1,
-                                            isShowNonPaid() ? "status" : null,
-                                            isShowNonPaid() ? "pending" : null,
-                                            isShowNonPaid() ? "eq" : null,
-                                            "created_at",
-                                            "2018-01-08 00:00:00",
-                                            "gt"
-                                    );
-                                    //System.out.println(orders.getItems());
-
-                                } else {
-
-                                    DateFormat sourceFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                                    sourceFormat.setTimeZone(TimeZone.getDefault());
-
-                                    Date dateTime = null;
-                                    try {
-                                        dateTime = sourceFormat.parse(lastExecution);
-                                    } catch (ParseException e) {
-                                        e.printStackTrace();
-                                    }
-
-                                    DateFormat targetFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                                    targetFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-
-                                    orders = orderApi.salesOrderRepositoryV1GetListGet(
-                                            "status",
-                                            "processing",
-                                            "eq",
-                                            "created_at",
-                                            "asc",
-                                            100,
-                                            1,
-                                            isShowNonPaid() ? "status" : null,
-                                            isShowNonPaid() ? "pending" : null,
-                                            isShowNonPaid() ? "eq" : null,
-                                            "created_at",
-                                            targetFormat.format(dateTime),
-                                            "gt"
-                                    );
-
-                                }
-
-
-                                    orders.getItems().forEach(item -> {
-                                    orderTreeObjects.add(new OrderTreeObject(item));
-
-                                });
-
-
-
-                                 TreeItem<OrderTreeObject> root = new RecursiveTreeItem<OrderTreeObject>(orderTreeObjects, RecursiveTreeObject::getChildren);
-
-
-                                magentoCustomerTable.setRoot(root);
-                                magentoCustomerTable.setShowRoot(false);
-
-                                if(selectedOrderObservable != null) {
-                                    magentoCustomerTable.getSelectionModel().select(selectedOrderObservable);
-                                }
-
-
-
-                            } catch (io.swagger.client.ApiException e) {
-                                e.printStackTrace();
-
-                                System.out.println(e.getResponseBody());
+                            if(fullRefresh) {
+                                cleanAllViews();
+                                lastExecution = null;
                             }
-                        }
 
-                        LocalDateTime currentDateTime = LocalDateTime.now();
-                        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-                        lastExecution = currentDateTime.format(dtf);
-                        fullRefresh = false;
+                            if(lastExecution == null) {
+                                orders = orderApi.salesOrderRepositoryV1GetListGet(
+                                        "status",
+                                        "processing",
+                                        "eq",
+                                        "created_at",
+                                        "asc",
+                                        100,
+                                        1,
+                                        isShowNonPaid() ? "status" : null,
+                                        isShowNonPaid() ? "pending" : null,
+                                        isShowNonPaid() ? "eq" : null,
+                                        "created_at",
+                                        "2018-01-08 00:00:00",
+                                        "gt"
+                                );
+                                //System.out.println(orders.getItems());
+
+                            } else {
+
+                                DateFormat sourceFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                                sourceFormat.setTimeZone(TimeZone.getDefault());
+
+                                Date dateTime = null;
+                                try {
+                                    dateTime = sourceFormat.parse(lastExecution);
+                                } catch (ParseException e) {
+                                    e.printStackTrace();
+                                }
+
+                                DateFormat targetFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                                targetFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+                                orders = orderApi.salesOrderRepositoryV1GetListGet(
+                                        "status",
+                                        "processing",
+                                        "eq",
+                                        "created_at",
+                                        "asc",
+                                        100,
+                                        1,
+                                        isShowNonPaid() ? "status" : null,
+                                        isShowNonPaid() ? "pending" : null,
+                                        isShowNonPaid() ? "eq" : null,
+                                        "created_at",
+                                        targetFormat.format(dateTime),
+                                        "gt"
+                                );
+
+                            }
+
+
+                                orders.getItems().forEach(item -> {
+                                orderTreeObjects.add(new OrderTreeObject(item));
+
+                            });
+
+
+
+                             TreeItem<OrderTreeObject> root = new RecursiveTreeItem<OrderTreeObject>(orderTreeObjects, RecursiveTreeObject::getChildren);
+
+
+                            magentoCustomerTable.setRoot(root);
+                            magentoCustomerTable.setShowRoot(false);
+
+                            if(selectedOrderObservable != null) {
+                                magentoCustomerTable.getSelectionModel().select(selectedOrderObservable);
+                            }
+
+
+
+                        } catch (io.swagger.client.ApiException e) {
+                            e.printStackTrace();
+
+                            System.out.println(e.getResponseBody());
+                        }
                     }
+
+                    LocalDateTime currentDateTime = LocalDateTime.now();
+                    DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                    lastExecution = currentDateTime.format(dtf);
+                    fullRefresh = false;
                 });
 
-              //  System.out.println("Run!");
 
                 // Sleep thread
-                try {
-                    sleep(TimeUnit.SECONDS.toMillis(30));
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(OrderThread.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
+//                try {
+//                    sleep(TimeUnit.SECONDS.toMillis(30));
+//                } catch (InterruptedException ex) {
+//                    Logger.getLogger(OrderThread.class.getName()).log(Level.SEVERE, null, ex);
+//                    currentThread().interrupt();
+//                }
+//            }
 
 
         }
