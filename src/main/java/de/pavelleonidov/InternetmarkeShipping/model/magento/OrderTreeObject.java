@@ -36,6 +36,7 @@ public class OrderTreeObject extends TreeObject<OrderTreeObject> {
         setChannel(channel);
         setPaymentMethod(formattedPaymentMethod);
         setCreatedAt(order.getCreatedAt());
+        setFirstItem(order.getItems().get(0).getName());
 
     }
 
@@ -87,6 +88,10 @@ public class OrderTreeObject extends TreeObject<OrderTreeObject> {
     public void setCreatedAt(String createdAt) {
         setProperty("createdAt", createdAt);
     }
+
+    public StringProperty getFirstItem() { return getProperty("firstItem"); }
+
+    public void setFirstItem(String firstItem) { setProperty("firstItem", firstItem); }
 
     public io.swagger.client.model.SalesDataOrderInterface getResponseOrder() {
         return responseOrder;

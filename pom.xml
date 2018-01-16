@@ -5,7 +5,7 @@
 
 	<groupId>de.pavelleonidov</groupId>
 	<artifactId>InternetmarkeShipping</artifactId>
-	<version>0.0.3-SNAPSHOT</version>
+	<version>0.0.5-SNAPSHOT</version>
 
 	<name>Internetmarke Shipping</name>
 	<description>Magento 2 connector and Deutsche Post Internetmarke label printing application</description>

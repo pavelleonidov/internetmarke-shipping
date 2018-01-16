@@ -112,8 +112,16 @@ public class PrinterService {
         }
     }
 
-    public void printDocument(PDDocument document, boolean isInternational, boolean hasCompanyName) {
+    public void printDocument(PDDocument document, boolean isInternational, boolean hasCompanyName, String jobName) {
+
+
         PrinterJob job = PrinterJob.createPrinterJob(getCurrentPrinter());
+
+        if(jobName == null || jobName.isEmpty()) {
+            jobName = "InternetmarkeShipping print job";
+        }
+
+
 
         PDFRenderer pdfRenderer = new PDFRenderer(document);
 
@@ -170,6 +178,7 @@ public class PrinterService {
 
             if (job != null)
             {
+                job.getJobSettings().setJobName(jobName);
                 job.getJobSettings().setPageLayout(layout);
 
                 // Print the node

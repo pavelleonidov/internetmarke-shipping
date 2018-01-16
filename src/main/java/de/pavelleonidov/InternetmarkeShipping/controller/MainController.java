@@ -24,21 +24,21 @@ import io.swagger.client.api.SalesOrderManagementV1Api;
 import io.swagger.client.api.SalesShipOrderV1Api;
 import io.swagger.client.model.Body99;
 import javafx.application.Platform;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.SortedList;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TreeItem;
+import javafx.scene.control.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import javafx.util.Callback;
 import org.apache.pdfbox.pdmodel.PDDocument;
 
 import java.io.File;
@@ -102,6 +102,10 @@ public class MainController extends AbstractController {
     protected TreeItem<OrderTreeObject> selectedOrderObservable;
 
     protected ObservableList<OrderTreeObject> orderTreeObjects;
+
+    protected SortedList<OrderTreeObject> sortedOrders;
+
+    protected ObservableList<TreeItem<OrderTreeObject>> selectedOrdersObservable;
 
     protected ObservableList<OrderDetailsTreeObject> orderDetailsTreeObjects;
 
@@ -175,80 +179,107 @@ public class MainController extends AbstractController {
 
     public void triggerPrintLabel(final Event e) {
 
+        selectedOrdersObservable = magentoCustomerTable.getSelectionModel().getSelectedItems();
 
-        String internetmarkeLabelFile = prepareInternetmarkeLabel();
+        if(!selectedOrdersObservable.isEmpty()) {
+            selectedOrdersObservable.forEach(item -> {
 
-        if(!internetmarkeLabelFile.isEmpty()) {
-            try {
+                io.swagger.client.model.SalesDataOrderInterface magentoOrder = item.getValue().getResponseOrder();
 
-                io.swagger.client.model.SalesDataOrderInterface magentoOrder = selectedOrder.get();
-                String orderId = magentoOrder.getIncrementId();
+                String internetmarkeLabelFile = prepareInternetmarkeLabel(magentoOrder);
 
-                PDDocument document = PDDocument.load(new File(internetmarkeLabelFile));
+                if(!internetmarkeLabelFile.isEmpty()) {
+                    try {
 
-                io.swagger.client.model.SalesDataOrderAddressInterface address = magentoOrder.getExtensionAttributes().getShippingAssignments().get(0).getShipping().getAddress();
+                        String orderId = magentoOrder.getIncrementId();
 
-                boolean isInternational = !address.getCountryId().equals("DE");
-                boolean hasCompanyName = address.getCompany() != null;
+                        PDDocument document = PDDocument.load(new File(internetmarkeLabelFile));
 
-                PrinterService.getInstance().printDocument(document, isInternational, hasCompanyName);
-                walletBalance.setText(InternetmarkeService.getInstance().getFormattedWalletBalance());
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            }
+                        io.swagger.client.model.SalesDataOrderAddressInterface address = magentoOrder.getExtensionAttributes().getShippingAssignments().get(0).getShipping().getAddress();
+
+                        boolean isInternational = !address.getCountryId().equals("DE");
+                        boolean hasCompanyName = address.getCompany() != null;
+
+                        PrinterService.getInstance().printDocument(document, isInternational, hasCompanyName, "Printing Internetmarke for order " + orderId);
+                        walletBalance.setText(InternetmarkeService.getInstance().getFormattedWalletBalance());
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+            });
         }
     }
 
     public void triggerPrintLabelAgain(final Event e) {
 
+        selectedOrdersObservable = magentoCustomerTable.getSelectionModel().getSelectedItems();
         SalesProduct product = selectedProduct.get();
-        io.swagger.client.model.SalesDataOrderInterface magentoOrder = selectedOrder.get();
 
-        File currentLabelFile = new File(Main.getHomeDirectory() + "marke-" + magentoOrder.getIncrementId() + "-" + product.getId() + ".pdf");
-        if(currentLabelFile.exists()) {
-            try {
+        if(!selectedOrdersObservable.isEmpty()) {
+            selectedOrdersObservable.forEach(item -> {
 
-                io.swagger.client.model.SalesDataOrderAddressInterface address = magentoOrder.getExtensionAttributes().getShippingAssignments().get(0).getShipping().getAddress();
+                io.swagger.client.model.SalesDataOrderInterface magentoOrder = item.getValue().getResponseOrder();
 
-                boolean isInternational = !address.getCountryId().equals("DE");
-                boolean hasCompanyName = address.getCompany() != null;
+                File currentLabelFile = new File(Main.getHomeDirectory() + "marke-" + magentoOrder.getIncrementId() + "-" + product.getId() + ".pdf");
+                if(currentLabelFile.exists()) {
+                    try {
 
-                PDDocument document = PDDocument.load(currentLabelFile);
+                        io.swagger.client.model.SalesDataOrderAddressInterface address = magentoOrder.getExtensionAttributes().getShippingAssignments().get(0).getShipping().getAddress();
 
-                PrinterService.getInstance().printDocument(document, isInternational, hasCompanyName);
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            }
+                        boolean isInternational = !address.getCountryId().equals("DE");
+                        boolean hasCompanyName = address.getCompany() != null;
+
+                        PDDocument document = PDDocument.load(currentLabelFile);
+
+                        PrinterService.getInstance().printDocument(document, isInternational, hasCompanyName, "Reprint Internetmarke for order " + magentoOrder.getIncrementId());
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+            });
         }
+
+
 
     }
 
     public void triggerShipProduct(final Event e) {
 
-        io.swagger.client.model.SalesDataOrderInterface magentoOrder = selectedOrder.get();
-        SalesShipOrderV1Api salesShip = new SalesShipOrderV1Api();
-        salesShip.getApiClient().setAccessToken(SettingsController.getSettings().getMagento2AccessToken());
-        salesShip.getApiClient().setBasePath(SettingsController.getSettings().getMagento2ApiUrl());
-        salesShip.getApiClient().getHttpClient().setReadTimeout(30, TimeUnit.SECONDS);
+        //io.swagger.client.model.SalesDataOrderInterface magentoOrder = selectedOrder.get();
+
+        selectedOrdersObservable = magentoCustomerTable.getSelectionModel().getSelectedItems();
+        if(!selectedOrdersObservable.isEmpty()) {
+            selectedOrdersObservable.forEach(item -> {
+                io.swagger.client.model.SalesDataOrderInterface magentoOrder = item.getValue().getResponseOrder();
+                SalesShipOrderV1Api salesShip = new SalesShipOrderV1Api();
+                salesShip.getApiClient().setAccessToken(SettingsController.getSettings().getMagento2AccessToken());
+                salesShip.getApiClient().setBasePath(SettingsController.getSettings().getMagento2ApiUrl());
+                salesShip.getApiClient().getHttpClient().setReadTimeout(30, TimeUnit.SECONDS);
 
 
-        io.swagger.client.model.Body99 shipBody = new Body99();
-        shipBody.setNotify(Boolean.TRUE);
+                io.swagger.client.model.Body99 shipBody = new Body99();
+                shipBody.setNotify(Boolean.TRUE);
+
+                try {
+
+                    salesShip.salesShipOrderV1ExecutePost(
+                            magentoOrder.getEntityId(),
+                            shipBody
+                    );
+                } catch (ApiException e1) {
+                    e1.printStackTrace();
+                }
 
 
-        try {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e1) {
+                    e1.printStackTrace();
+                }
+            });
 
-            salesShip.salesShipOrderV1ExecutePost(
-                    magentoOrder.getEntityId(),
-                    shipBody
-            );
-
-            cleanDetailViews();
-
-        } catch (ApiException e1) {
-            e1.printStackTrace();
+            fullRefreshOrders(null);
         }
-
 
     }
 
@@ -312,6 +343,7 @@ public class MainController extends AbstractController {
         private JFXTreeTableColumn<OrderTreeObject, String> paymentMethodColumn;
         private JFXTreeTableColumn<OrderTreeObject, String> statusColumn;
         private JFXTreeTableColumn<OrderTreeObject, String> createdAtColumn;
+        private JFXTreeTableColumn<OrderTreeObject, String> firstItemColumn;
 
         private String lastExecution;
 
@@ -327,15 +359,21 @@ public class MainController extends AbstractController {
             selectedOrder = new AtomicReference<>();
 
             orderIdColumn = OrderTreeColumnFactory.getInstance().createColumn("Bestellnummer", "orderId");
+            firstItemColumn = OrderTreeColumnFactory.getInstance().createColumn("Produkt", "firstItem");
             customerNameColumn = OrderTreeColumnFactory.getInstance().createColumn("Kunde", "customerName");
             channelColumn = OrderTreeColumnFactory.getInstance().createColumn("Kanal", "channel");
             paymentMethodColumn = OrderTreeColumnFactory.getInstance().createColumn("Bezahlmethode", "paymentMethod");
             statusColumn = OrderTreeColumnFactory.getInstance().createColumn("Status", "status");
             createdAtColumn = OrderTreeColumnFactory.getInstance().createDateColumn("Datum", "createdAt");
 
-            magentoCustomerTable.getColumns().setAll(orderIdColumn, customerNameColumn, channelColumn, paymentMethodColumn, statusColumn, createdAtColumn);
+            firstItemColumn.setSortType(TreeTableColumn.SortType.ASCENDING);
+
+            magentoCustomerTable.getColumns().setAll(orderIdColumn, firstItemColumn, customerNameColumn, channelColumn, paymentMethodColumn, statusColumn, createdAtColumn);
+
 
             orderTreeObjects = FXCollections.observableArrayList();
+
+
             orderDetailsTreeObjects = FXCollections.observableArrayList();
             salesItemTreeObjects = FXCollections.observableArrayList();
 
@@ -351,7 +389,11 @@ public class MainController extends AbstractController {
                 orderApi.getApiClient().setDateFormat(localDateFormat);
             }
 
+            magentoCustomerTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+
+
             magentoCustomerTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+
 
                 if(newValue != null) {
                     OrderTreeObject currentOrder = newValue.getValue();
@@ -400,6 +442,8 @@ public class MainController extends AbstractController {
             });
 
 
+
+
             SalesProductList productList = ProdWSSalesProductService.getInstance().getProducts();
 
             if(productList != null) {
@@ -422,9 +466,6 @@ public class MainController extends AbstractController {
                 selectedProduct.set(newValue);
                 //System.out.println(selectedProduct.get().getName());
             });
-
-
-
         }
 
         @Override
@@ -534,18 +575,40 @@ public class MainController extends AbstractController {
                             });
 
 
+                            TreeTableColumn sortColumn = null;
+                            TreeTableColumn.SortType sortType = null;
 
-                             TreeItem<OrderTreeObject> root = new RecursiveTreeItem<OrderTreeObject>(orderTreeObjects, RecursiveTreeObject::getChildren);
+                            if(magentoCustomerTable.getSortOrder().size() > 0) {
+                                sortColumn = magentoCustomerTable.getSortOrder().get(0);
+                                sortType = sortColumn.getSortType();
+                            }
 
+                            selectedOrdersObservable = FXCollections.observableArrayList(magentoCustomerTable.getSelectionModel().getSelectedItems());
+
+                            System.out.println(selectedOrdersObservable);
+
+                            TreeItem<OrderTreeObject> root = new RecursiveTreeItem<OrderTreeObject>(orderTreeObjects, RecursiveTreeObject::getChildren);
 
                             magentoCustomerTable.setRoot(root);
                             magentoCustomerTable.setShowRoot(false);
 
-                            if(selectedOrderObservable != null) {
-                                magentoCustomerTable.getSelectionModel().select(selectedOrderObservable);
+
+                            // Keep sortings
+                            if(sortColumn != null) {
+                                magentoCustomerTable.getSortOrder().add(sortColumn);
+                                sortColumn.setSortType(sortType);
+                                sortColumn.setSortable(true);
                             }
 
+                            // Keep selections
+                            if(selectedOrdersObservable != null) {
+                                magentoCustomerTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+                                magentoCustomerTable.getSelectionModel().clearSelection();
 
+                                selectedOrdersObservable.forEach(item -> {
+                                    magentoCustomerTable.getSelectionModel().select(item);
+                                });
+                            }
 
                         } catch (io.swagger.client.ApiException e) {
                             e.printStackTrace();
@@ -569,18 +632,14 @@ public class MainController extends AbstractController {
 //                    currentThread().interrupt();
 //                }
 //            }
-
-
         }
 
     }
 
-    protected String prepareInternetmarkeLabel() {
+    protected String prepareInternetmarkeLabel(io.swagger.client.model.SalesDataOrderInterface magentoOrder) {
 
         SalesProduct product = selectedProduct.get();
 
-
-        io.swagger.client.model.SalesDataOrderInterface magentoOrder = selectedOrder.get();
         io.swagger.client.model.SalesDataOrderAddressInterface address = magentoOrder.getExtensionAttributes().getShippingAssignments().get(0).getShipping().getAddress();
 
         String formattedStreet = address.getStreet().get(0);
@@ -608,6 +667,10 @@ public class MainController extends AbstractController {
             e1.printStackTrace();
             return "";
         }
+    }
+
+    protected String prepareInternetmarkeLabel() {
+        return prepareInternetmarkeLabel(selectedOrder.get());
     }
 
     protected void cleanLabelFiles() {
@@ -643,7 +706,12 @@ public class MainController extends AbstractController {
             orderTreeObjects.removeAll(selectedOrderObservable.getValue());
         }
 
+        if(selectedOrdersObservable != null) {
+            orderTreeObjects.removeAll(selectedOrdersObservable);
+        }
+
         selectedOrderObservable = null;
+        selectedOrdersObservable = null;
     }
 
     private String parseHousenumber(String str) {
