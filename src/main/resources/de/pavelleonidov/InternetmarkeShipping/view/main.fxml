@@ -3,6 +3,7 @@
 <?import com.jfoenix.controls.JFXButton?>
 <?import com.jfoenix.controls.JFXCheckBox?>
 <?import com.jfoenix.controls.JFXListView?>
+<?import com.jfoenix.controls.JFXTextField?>
 <?import com.jfoenix.controls.JFXTreeTableView?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Menu?>
@@ -41,7 +42,16 @@
                     <items>
                       <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="0.0" prefHeight="350.0" prefWidth="848.0">
                            <children>
-                              <JFXTreeTableView fx:id="magentoCustomerTable" editable="true" prefHeight="404.0" prefWidth="848.0" styleClass="customer-table" stylesheets="@style.css" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                              <AnchorPane prefHeight="45.0" prefWidth="848.0">
+                                 <children>
+                                    <Label layoutX="14.0" layoutY="14.0" text="Filtern:" />
+                                    <JFXTextField fx:id="filterField" layoutX="65.0" layoutY="9.0" prefHeight="27.0" prefWidth="221.0" />
+                                    <JFXButton fx:id="resetButton" layoutX="295.0" layoutY="9.0" onAction="#resetFilter" style="-fx-background-color: #ddd;" text="Reset" />
+                                    <Label layoutX="702.0" layoutY="14.0" text="Datensätze gefunden" />
+                                    <Label fx:id="labelCount" layoutX="686.0" layoutY="14.0" text="0" />
+                                 </children>
+                              </AnchorPane>
+                              <JFXTreeTableView fx:id="magentoCustomerTable" editable="true" prefHeight="404.0" prefWidth="848.0" styleClass="customer-table" stylesheets="@style.css" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="45.0" />
                            </children>
                         </AnchorPane>
                       <AnchorPane prefHeight="300.0" prefWidth="848.0" style="-fx-background-color: #ffffff;">

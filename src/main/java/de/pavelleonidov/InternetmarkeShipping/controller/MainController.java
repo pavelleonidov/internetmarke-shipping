@@ -63,6 +63,7 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -93,6 +94,15 @@ public class MainController extends AbstractController {
     @FXML
     private JFXCheckBox buttonDisablePendingOrders;
 
+    @FXML
+    private JFXButton resetButton;
+
+    @FXML
+    private Label labelCount;
+
+    @FXML
+    private JFXTextField filterField;
+
     private boolean showNonPaid = true;
 
     protected AtomicReference<SalesProduct> selectedProduct;
@@ -110,6 +120,8 @@ public class MainController extends AbstractController {
     protected ObservableList<OrderDetailsTreeObject> orderDetailsTreeObjects;
 
     protected ObservableList<SalesItemTreeObject> salesItemTreeObjects;
+
+    protected Predicate<TreeItem<OrderTreeObject>> predicate;
 
 
     protected boolean fullRefresh = false;
@@ -148,13 +160,12 @@ public class MainController extends AbstractController {
 
         walletBalance.setText(InternetmarkeService.getInstance().getFormattedWalletBalance());
 
-        buttonDisablePendingOrders.selectedProperty().addListener(new ChangeListener<Boolean>() {
-            @Override
-            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-                setShowNonPaid(oldValue);
-                fullRefreshOrders(null);
-            }
+        buttonDisablePendingOrders.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            setShowNonPaid(oldValue);
+            fullRefreshOrders(null);
         });
+
+        initPredicate();
 
     }
 
@@ -210,6 +221,12 @@ public class MainController extends AbstractController {
         }
     }
 
+    public void resetFilter(final Event e) {
+
+        filterField.textProperty().setValue("");
+
+    }
+
     public void triggerPrintLabelAgain(final Event e) {
 
         selectedOrdersObservable = magentoCustomerTable.getSelectionModel().getSelectedItems();
@@ -220,7 +237,7 @@ public class MainController extends AbstractController {
 
                 io.swagger.client.model.SalesDataOrderInterface magentoOrder = item.getValue().getResponseOrder();
 
-                File currentLabelFile = new File(Main.getHomeDirectory() + "marke-" + magentoOrder.getIncrementId() + "-" + product.getId() + ".pdf");
+                File currentLabelFile = new File(Main.getHomeDirectory() + "marke-" + magentoOrder.getIncrementId() + "-" + magentoOrder.getCustomerFirstname().trim() + "-" + magentoOrder.getCustomerLastname().trim() + "-" +  product.getId() + ".pdf");
                 if(currentLabelFile.exists()) {
                     try {
 
@@ -319,12 +336,7 @@ public class MainController extends AbstractController {
 
         //Main.showView(CustomerAddressView.class, Modality.APPLICATION_MODAL);
         Stage customerDetailStage = loadDependentView("customeraddress.fxml");
-        customerDetailStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-            @Override
-            public void handle(WindowEvent windowEvent) {
-                fullRefreshOrders(event);
-            }
-        });
+        customerDetailStage.setOnCloseRequest(windowEvent -> fullRefreshOrders(event));
 
     }
 
@@ -585,12 +597,17 @@ public class MainController extends AbstractController {
 
                             selectedOrdersObservable = FXCollections.observableArrayList(magentoCustomerTable.getSelectionModel().getSelectedItems());
 
-                            System.out.println(selectedOrdersObservable);
+
 
                             TreeItem<OrderTreeObject> root = new RecursiveTreeItem<OrderTreeObject>(orderTreeObjects, RecursiveTreeObject::getChildren);
 
-                            magentoCustomerTable.setRoot(root);
-                            magentoCustomerTable.setShowRoot(false);
+                            if(magentoCustomerTable.getRoot() == null) {
+                                magentoCustomerTable.setRoot(root);
+                                magentoCustomerTable.setShowRoot(false);
+                            } else {
+                                magentoCustomerTable.getRoot().setValue(root.getValue());
+                            }
+
 
 
                             // Keep sortings
@@ -609,6 +626,11 @@ public class MainController extends AbstractController {
                                     magentoCustomerTable.getSelectionModel().select(item);
                                 });
                             }
+
+                            initCounts();
+                            //magentoCustomerTable.setPredicate(new OrderFilter(filterField.textProperty().getValue()));
+
+
 
                         } catch (io.swagger.client.ApiException e) {
                             e.printStackTrace();
@@ -651,14 +673,17 @@ public class MainController extends AbstractController {
         int totalValue = product.getGrossPriceValue().multiply(new BigDecimal(100)).intValueExact();
 
 
-        String targetProduct = InternetmarkeService.getInstance().getProduct(Integer.parseInt(product.getId()), magentoOrder.getCustomerFirstname(), magentoOrder.getCustomerLastname(),address.getCompany(), address.getPostcode(), address.getCity(), street, houseNumber, iso2CountryCodeToIso3CountryCode(address.getCountryId()), totalValue);
+        String targetProduct = InternetmarkeService.getInstance().getProduct(Integer.parseInt(product.getId()), address.getFirstname(), address.getLastname(), address.getCompany(), address.getPostcode(), address.getCity(), street, houseNumber, iso2CountryCodeToIso3CountryCode(address.getCountryId()), totalValue);
 
        try {
             URL url = new URL(targetProduct);
             InputStream in = url.openStream();
-            Files.copy(in, Paths.get(Main.getHomeDirectory() + "marke-" + magentoOrder.getIncrementId() + "-" + product.getId() + ".pdf"), StandardCopyOption.REPLACE_EXISTING);
 
-            return Main.getHomeDirectory() + "marke-" + magentoOrder.getIncrementId() + "-" + product.getId() + ".pdf";
+            String targetFileName = Main.getHomeDirectory() + "marke-" + magentoOrder.getIncrementId() + "-" + magentoOrder.getCustomerFirstname().trim() + "-" + magentoOrder.getCustomerLastname().trim() + "-" + product.getId() + ".pdf";
+
+            Files.copy(in, Paths.get(targetFileName), StandardCopyOption.REPLACE_EXISTING);
+
+            return targetFileName;
 
         } catch (MalformedURLException e1) {
             e1.printStackTrace();
@@ -752,5 +777,33 @@ public class MainController extends AbstractController {
 
     public void setShowNonPaid(boolean showNonPaid) {
         this.showNonPaid = showNonPaid;
+    }
+
+    protected void initPredicate() {
+        filterField.textProperty().addListener((observable, oldValue, newValue) -> {
+
+            magentoCustomerTable.setPredicate(new OrderFilter(newValue));
+
+        });
+    }
+
+    protected class OrderFilter implements Predicate<TreeItem<OrderTreeObject>> {
+        private final String filterText;
+
+        OrderFilter(String filterText) {
+            this.filterText = filterText;
+        }
+
+        public boolean test(TreeItem<OrderTreeObject> orderTreeObjectTreeItem) {
+
+            Boolean filter = orderTreeObjectTreeItem.getValue().getCustomerName().getValue().contains(filterText) || orderTreeObjectTreeItem.getValue().getFirstItem().getValue().contains(filterText);
+            magentoCustomerTable.getSelectionModel().clearSelection();
+
+            return filter;
+        }
+    }
+
+    protected void initCounts() {
+        labelCount.setText(String.valueOf(magentoCustomerTable.getRoot().getChildren().size()));
     }
 }
