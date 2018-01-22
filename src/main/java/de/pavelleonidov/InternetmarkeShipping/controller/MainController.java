@@ -21,8 +21,11 @@ import de.felixroske.jfxsupport.FXMLController;
 import io.swagger.client.ApiException;
 import io.swagger.client.api.CustomerAddressRepositoryV1Api;
 import io.swagger.client.api.SalesOrderManagementV1Api;
+import io.swagger.client.api.SalesRefundOrderV1Api;
 import io.swagger.client.api.SalesShipOrderV1Api;
+import io.swagger.client.model.Body95;
 import io.swagger.client.model.Body99;
+import io.swagger.client.model.SalesDataCreditmemoItemCreationInterface;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ChangeListener;
@@ -217,6 +220,11 @@ public class MainController extends AbstractController {
                         e1.printStackTrace();
                     }
                 }
+                try {
+                    TimeUnit.SECONDS.sleep(2);
+                } catch (InterruptedException e1) {
+                    e1.printStackTrace();
+                }
             });
         }
     }
@@ -252,6 +260,11 @@ public class MainController extends AbstractController {
                     } catch (IOException e1) {
                         e1.printStackTrace();
                     }
+                }
+                try {
+                    TimeUnit.SECONDS.sleep(2);
+                } catch (InterruptedException e1) {
+                    e1.printStackTrace();
                 }
             });
         }
@@ -303,18 +316,46 @@ public class MainController extends AbstractController {
     public void cancelOrder(Event event) {
         io.swagger.client.model.SalesDataOrderInterface currentOrder = getCurrentOrder().get();
 
-        io.swagger.client.api.SalesOrderManagementV1Api salesOrderManagement = new SalesOrderManagementV1Api();
-        salesOrderManagement.getApiClient().setAccessToken(SettingsController.getSettings().getMagento2AccessToken());
-        salesOrderManagement.getApiClient().setBasePath(SettingsController.getSettings().getMagento2ApiUrl());
-        salesOrderManagement.getApiClient().getHttpClient().setReadTimeout(30, TimeUnit.SECONDS);
+        if(currentOrder.getStatus().equals("pending")) {
+            io.swagger.client.api.SalesOrderManagementV1Api salesOrderManagement = new SalesOrderManagementV1Api();
+            salesOrderManagement.getApiClient().setAccessToken(SettingsController.getSettings().getMagento2AccessToken());
+            salesOrderManagement.getApiClient().setBasePath(SettingsController.getSettings().getMagento2ApiUrl());
+            salesOrderManagement.getApiClient().getHttpClient().setReadTimeout(30, TimeUnit.SECONDS);
 
-        try {
-            salesOrderManagement.salesOrderManagementV1CancelPost(currentOrder.getEntityId());
-            fullRefreshOrders(event);
-        } catch (ApiException e) {
-            e.printStackTrace();
-            System.out.println(e.getResponseBody());
+            try {
+
+                salesOrderManagement.salesOrderManagementV1CancelPost(currentOrder.getEntityId());
+                fullRefreshOrders(event);
+            } catch (ApiException e) {
+                e.printStackTrace();
+                System.out.println(e.getResponseBody());
+            }
+        } else {
+            io.swagger.client.api.SalesRefundOrderV1Api salesRefundOrder = new SalesRefundOrderV1Api();
+            salesRefundOrder.getApiClient().setAccessToken(SettingsController.getSettings().getMagento2AccessToken());
+            salesRefundOrder.getApiClient().setBasePath(SettingsController.getSettings().getMagento2ApiUrl());
+            salesRefundOrder.getApiClient().getHttpClient().setReadTimeout(30, TimeUnit.SECONDS);
+
+            io.swagger.client.model.Body95 refundBody = new Body95();
+
+            currentOrder.getItems().forEach(item -> {
+                io.swagger.client.model.SalesDataCreditmemoItemCreationInterface memoItem = new SalesDataCreditmemoItemCreationInterface();
+                memoItem.setOrderItemId(item.getItemId());
+                memoItem.setQty(item.getQtyOrdered());
+                refundBody.addItemsItem(memoItem);
+            });
+
+            refundBody.setNotify(false);
+
+            try {
+                salesRefundOrder.salesRefundOrderV1ExecutePost(currentOrder.getEntityId(), refundBody);
+                fullRefreshOrders(event);
+            } catch (ApiException e) {
+                e.printStackTrace();
+                System.out.println(e.getResponseBody());
+            }
         }
+
 
     }
 
