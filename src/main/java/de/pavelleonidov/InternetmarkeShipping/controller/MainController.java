@@ -221,7 +221,7 @@ public class MainController extends AbstractController {
                     }
                 }
                 try {
-                    TimeUnit.SECONDS.sleep(2);
+                    TimeUnit.SECONDS.sleep(4);
                 } catch (InterruptedException e1) {
                     e1.printStackTrace();
                 }
@@ -245,11 +245,13 @@ public class MainController extends AbstractController {
 
                 io.swagger.client.model.SalesDataOrderInterface magentoOrder = item.getValue().getResponseOrder();
 
-                File currentLabelFile = new File(Main.getHomeDirectory() + "marke-" + magentoOrder.getIncrementId() + "-" + magentoOrder.getCustomerFirstname().trim() + "-" + magentoOrder.getCustomerLastname().trim() + "-" +  product.getId() + ".pdf");
+                io.swagger.client.model.SalesDataOrderAddressInterface address = magentoOrder.getExtensionAttributes().getShippingAssignments().get(0).getShipping().getAddress();
+
+
+                File currentLabelFile = new File(Main.getHomeDirectory() + "marke-" + magentoOrder.getIncrementId() + "-" + address.getFirstname().trim().replaceAll("[^a-zA-Z]", "") + "-" + address.getLastname().trim().replaceAll("[^a-zA-Z]", "") + "-" +  product.getId() + ".pdf");
                 if(currentLabelFile.exists()) {
                     try {
 
-                        io.swagger.client.model.SalesDataOrderAddressInterface address = magentoOrder.getExtensionAttributes().getShippingAssignments().get(0).getShipping().getAddress();
 
                         boolean isInternational = !address.getCountryId().equals("DE");
                         boolean hasCompanyName = address.getCompany() != null;
@@ -262,7 +264,7 @@ public class MainController extends AbstractController {
                     }
                 }
                 try {
-                    TimeUnit.SECONDS.sleep(2);
+                    TimeUnit.SECONDS.sleep(4);
                 } catch (InterruptedException e1) {
                     e1.printStackTrace();
                 }
@@ -462,8 +464,9 @@ public class MainController extends AbstractController {
                         // System.out.println(item);
 
 
+
                         orderDetailsTreeObjects.addAll(
-                          new OrderDetailsTreeObject("Name", responseOrder.getCustomerFirstname() + " " + responseOrder.getCustomerLastname()),
+                          new OrderDetailsTreeObject("Name", address.getFirstname() + " " + address.getLastname()),
                           new OrderDetailsTreeObject("Straße", (address.getStreet() != null ? address.getStreet().get(0) : "")),
                           new OrderDetailsTreeObject("PLZ", address.getPostcode()),
                           new OrderDetailsTreeObject("Stadt", address.getCity()),
@@ -710,7 +713,6 @@ public class MainController extends AbstractController {
         String street = parseStreet(formattedStreet);
         String houseNumber = parseHousenumber(formattedStreet);
 
-
         int totalValue = product.getGrossPriceValue().multiply(new BigDecimal(100)).intValueExact();
 
 
@@ -720,7 +722,7 @@ public class MainController extends AbstractController {
             URL url = new URL(targetProduct);
             InputStream in = url.openStream();
 
-            String targetFileName = Main.getHomeDirectory() + "marke-" + magentoOrder.getIncrementId() + "-" + magentoOrder.getCustomerFirstname().trim() + "-" + magentoOrder.getCustomerLastname().trim() + "-" + product.getId() + ".pdf";
+            String targetFileName = Main.getHomeDirectory() + "marke-" + magentoOrder.getIncrementId() + "-" + address.getFirstname().trim().replaceAll("[^a-zA-Z]", "") + "-" + address.getLastname().trim().replaceAll("[^a-zA-Z]", "") + "-" + product.getId() + ".pdf";
 
             Files.copy(in, Paths.get(targetFileName), StandardCopyOption.REPLACE_EXISTING);
 
@@ -781,14 +783,24 @@ public class MainController extends AbstractController {
     }
 
     private String parseHousenumber(String str) {
+        // Special case: Mannheim's square city
+        Matcher matchSquare = Pattern.compile("^([a-zA-Z])\\d").matcher(str);
+        if(matchSquare.find()) {
+            Matcher match = Pattern.compile("(?!\\w\\W[0-9])\\s?[0-9].*").matcher(str);
+            if (match.find()) {
+                return match.group(0).trim();
+            }
+            return "";
+        } else {
+            // All other street names, including missing whitespaces between street and house number
+            Matcher match = Pattern.compile("(?!\\w\\W)?\\s?[0-9].*").matcher(str);
 
-
-        Matcher match = Pattern.compile("(?!\\w\\W)+[0-9]+[a-zA-Z]?").matcher(str);
-
-        if(match.find()) {
-            return match.group(0);
+            if (match.find()) {
+                return match.group(0).trim();
+            }
+            return "";
         }
-        return "";
+
     }
 
     private String parseStreet(String str) {

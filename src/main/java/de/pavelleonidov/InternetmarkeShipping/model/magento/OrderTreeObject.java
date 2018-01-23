@@ -19,8 +19,11 @@ public class OrderTreeObject extends TreeObject<OrderTreeObject> {
         super();
         responseOrder = order;
 
+        io.swagger.client.model.SalesDataOrderAddressInterface address = responseOrder.getExtensionAttributes().getShippingAssignments().get(0).getShipping().getAddress();
+
+
         setOrderId(order.getIncrementId());
-        setCustomerName(order.getCustomerFirstname() + " " + order.getCustomerLastname());
+        setCustomerName(address.getFirstname() + " " + address.getLastname());
         setStatus(order.getStatus());
 
         String paymentMethod = order.getPayment().getMethod();
