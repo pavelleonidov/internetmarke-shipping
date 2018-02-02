@@ -1,6 +1,8 @@
 package de.pavelleonidov.InternetmarkeShipping.model.magento;
 
 import com.jfoenix.controls.datamodels.treetable.RecursiveTreeObject;
+import de.pavelleonidov.InternetmarkeShipping.controller.MainController;
+import de.pavelleonidov.InternetmarkeShipping.controller.SettingsController;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import org.springframework.core.annotation.Order;
@@ -9,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class OrderTreeObject extends TreeObject<OrderTreeObject> {
 
@@ -32,8 +35,34 @@ public class OrderTreeObject extends TreeObject<OrderTreeObject> {
 
         if(paymentMethod.equals("m2epropayment")) {
             List<String> additionalPaymentInformation = order.getPayment().getAdditionalInformation();
+
             channel = additionalPaymentInformation.get(0);
             formattedPaymentMethod = additionalPaymentInformation.get(1);
+        }
+
+
+        setChannelAccountName("");
+
+        // This column is relevant for M2EPro connector in order to display the eBay / Amazon customer account name in the tree view
+        if(order.getCustomerId() != null) {
+
+            try {
+                io.swagger.client.model.CustomerDataCustomerInterface customerInterface = MainController.getCustomerRepositoryApi().customerCustomerRepositoryV1GetByIdGet(order.getCustomerId());
+
+                List<io.swagger.client.model.FrameworkAttributeInterface> customAttributes = customerInterface.getCustomAttributes();
+
+                if(customAttributes.size() > 1) {
+                    // Take eBay account name
+                    if(customAttributes.get(1).getAttributeCode().equals("ebay_user_id")) {
+                        setChannelAccountName(customAttributes.get(1).getValue());
+                    }
+                }
+
+
+            } catch (io.swagger.client.ApiException e) {
+                e.printStackTrace();
+            }
+
         }
 
         setChannel(channel);
@@ -58,6 +87,14 @@ public class OrderTreeObject extends TreeObject<OrderTreeObject> {
 
     public void setCustomerName(String customerName) {
         setProperty("customerName", customerName);
+    }
+
+    public StringProperty getChannelAccountName() {
+        return getProperty("channelAccountName");
+    }
+
+    public void setChannelAccountName(String channelAccountName) {
+        setProperty("channelAccountName", channelAccountName);
     }
 
     public StringProperty getStatus() {

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.JFXTreeTableView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox prefHeight="410.0" prefWidth="438.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.pavelleonidov.InternetmarkeShipping.controller.ProdwsDetailsController">
+   <children>
+    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="410.0" prefWidth="415.0">
+         <children>
+            <JFXTreeTableView fx:id="prodwsDetailTableView" layoutX="14.0" layoutY="14.0" AnchorPane.bottomAnchor="14.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="14.0" />
+         </children>
+      </AnchorPane>
+   </children>
+</VBox>

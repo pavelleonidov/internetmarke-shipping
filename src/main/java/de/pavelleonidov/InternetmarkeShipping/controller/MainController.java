@@ -19,6 +19,7 @@ import de.pavelleonidov.InternetmarkeShipping.view.SettingsView;
 import com.jfoenix.controls.datamodels.treetable.RecursiveTreeObject;
 import de.felixroske.jfxsupport.FXMLController;
 import io.swagger.client.ApiException;
+
 import io.swagger.client.api.CustomerAddressRepositoryV1Api;
 import io.swagger.client.api.SalesOrderManagementV1Api;
 import io.swagger.client.api.SalesRefundOrderV1Api;
@@ -34,10 +35,14 @@ import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.SortedList;
+import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -110,6 +115,8 @@ public class MainController extends AbstractController {
 
     protected AtomicReference<SalesProduct> selectedProduct;
 
+    protected static SalesProduct infoSelectedProduct;
+
     protected static AtomicReference<io.swagger.client.model.SalesDataOrderInterface> selectedOrder;
 
     protected TreeItem<OrderTreeObject> selectedOrderObservable;
@@ -144,8 +151,16 @@ public class MainController extends AbstractController {
 
     protected OrderThread orderThread;
 
+    protected static io.swagger.client.api.CustomerCustomerRepositoryV1Api customerCustomerRepositoryV1Api = new io.swagger.client.api.CustomerCustomerRepositoryV1Api();
+
+
+
     @FXML
     void initialize() {
+
+        customerCustomerRepositoryV1Api.getApiClient().setAccessToken(SettingsController.getSettings().getMagento2AccessToken());
+        customerCustomerRepositoryV1Api.getApiClient().setBasePath(SettingsController.getSettings().getMagento2ApiUrl());
+        customerCustomerRepositoryV1Api.getApiClient().getHttpClient().setReadTimeout(30, TimeUnit.SECONDS);
 
         startThread();
 
@@ -283,6 +298,9 @@ public class MainController extends AbstractController {
         if(!selectedOrdersObservable.isEmpty()) {
             selectedOrdersObservable.forEach(item -> {
                 io.swagger.client.model.SalesDataOrderInterface magentoOrder = item.getValue().getResponseOrder();
+
+
+
                 SalesShipOrderV1Api salesShip = new SalesShipOrderV1Api();
                 salesShip.getApiClient().setAccessToken(SettingsController.getSettings().getMagento2AccessToken());
                 salesShip.getApiClient().setBasePath(SettingsController.getSettings().getMagento2ApiUrl());
@@ -387,6 +405,16 @@ public class MainController extends AbstractController {
         return selectedOrder;
     }
 
+    public static SalesProduct getInfoSelectedProduct() {
+        return infoSelectedProduct;
+    }
+
+    public static io.swagger.client.api.CustomerCustomerRepositoryV1Api getCustomerRepositoryApi() {
+        return customerCustomerRepositoryV1Api;
+    }
+
+
+
     public class OrderThread extends Thread {
 
         private JFXTreeTableColumn<OrderTreeObject, String>[] tableColumns;
@@ -395,6 +423,7 @@ public class MainController extends AbstractController {
         private JFXTreeTableColumn<OrderTreeObject, String> orderIdColumn;
         private JFXTreeTableColumn<OrderTreeObject, String> customerNameColumn;
         private JFXTreeTableColumn<OrderTreeObject, String> channelColumn;
+        private JFXTreeTableColumn<OrderTreeObject, String> channelAccountColumn;
         private JFXTreeTableColumn<OrderTreeObject, String> paymentMethodColumn;
         private JFXTreeTableColumn<OrderTreeObject, String> statusColumn;
         private JFXTreeTableColumn<OrderTreeObject, String> createdAtColumn;
@@ -417,13 +446,14 @@ public class MainController extends AbstractController {
             firstItemColumn = OrderTreeColumnFactory.getInstance().createColumn("Produkt", "firstItem");
             customerNameColumn = OrderTreeColumnFactory.getInstance().createColumn("Kunde", "customerName");
             channelColumn = OrderTreeColumnFactory.getInstance().createColumn("Kanal", "channel");
+            channelAccountColumn = OrderTreeColumnFactory.getInstance().createColumn("Kanal-Account", "channelAccountName");
             paymentMethodColumn = OrderTreeColumnFactory.getInstance().createColumn("Bezahlmethode", "paymentMethod");
             statusColumn = OrderTreeColumnFactory.getInstance().createColumn("Status", "status");
             createdAtColumn = OrderTreeColumnFactory.getInstance().createDateColumn("Datum", "createdAt");
 
             firstItemColumn.setSortType(TreeTableColumn.SortType.ASCENDING);
 
-            magentoCustomerTable.getColumns().setAll(orderIdColumn, firstItemColumn, customerNameColumn, channelColumn, paymentMethodColumn, statusColumn, createdAtColumn);
+            magentoCustomerTable.getColumns().setAll(orderIdColumn, firstItemColumn, customerNameColumn, channelAccountColumn, channelColumn, paymentMethodColumn, statusColumn, createdAtColumn);
 
 
             orderTreeObjects = FXCollections.observableArrayList();
@@ -457,12 +487,17 @@ public class MainController extends AbstractController {
 
                     io.swagger.client.model.SalesDataOrderAddressInterface address = responseOrder.getExtensionAttributes().getShippingAssignments().get(0).getShipping().getAddress();
 
+
+                    Integer customerId = responseOrder.getCustomerId();
+
+
+
+
                     salesItemTreeObjects.clear();
                     orderDetailsTreeObjects.clear();
                     responseOrder.getItems().forEach(item -> {
                         salesItemTreeObjects.add(new SalesItemTreeObject(item));
                         // System.out.println(item);
-
 
 
                         orderDetailsTreeObjects.addAll(
@@ -506,15 +541,7 @@ public class MainController extends AbstractController {
                 ObservableList<SalesProduct> observableList = FXCollections.observableList(productList.getProducts());
                 prodWSProducts.setItems(observableList);
                 prodWSProducts.setCellFactory((final ListView<SalesProduct> listView) -> {
-                    return new ListCell<SalesProduct>() {
-                        @Override
-                        protected void updateItem(SalesProduct t, boolean bln) {
-                            super.updateItem(t, bln);
-                            if(t != null) {
-                                setText(t.getName() + " (" + t.getGrossPriceValue() + " " + t.getGrossPriceCurrency() + ")");
-                            }
-                        }
-                    };
+                    return new ProductCell();
                 });
             }
 
@@ -626,6 +653,7 @@ public class MainController extends AbstractController {
 
 
                                 orders.getItems().forEach(item -> {
+
                                 orderTreeObjects.add(new OrderTreeObject(item));
 
                             });
@@ -844,12 +872,12 @@ public class MainController extends AbstractController {
         private final String filterText;
 
         OrderFilter(String filterText) {
-            this.filterText = filterText;
+            this.filterText = filterText.trim();
         }
 
         public boolean test(TreeItem<OrderTreeObject> orderTreeObjectTreeItem) {
 
-            Boolean filter = orderTreeObjectTreeItem.getValue().getCustomerName().getValue().contains(filterText) || orderTreeObjectTreeItem.getValue().getFirstItem().getValue().contains(filterText);
+            Boolean filter = orderTreeObjectTreeItem.getValue().getCustomerName().getValue().contains(filterText) || orderTreeObjectTreeItem.getValue().getChannelAccountName().getValue().contains(filterText) || orderTreeObjectTreeItem.getValue().getFirstItem().getValue().contains(filterText);
             magentoCustomerTable.getSelectionModel().clearSelection();
 
             return filter;
@@ -858,5 +886,46 @@ public class MainController extends AbstractController {
 
     protected void initCounts() {
         labelCount.setText(String.valueOf(magentoCustomerTable.getRoot().getChildren().size()));
+    }
+
+    public  class ProductCell extends ListCell<SalesProduct> {
+        HBox hbox = new HBox();
+        Label label = new Label();
+        Pane pane = new Pane();
+        Button button = new Button("Details");
+        SalesProduct salesProduct;
+
+
+
+        public ProductCell() {
+            super();
+            hbox.getChildren().addAll(label, pane, button);
+            HBox.setHgrow(pane, Priority.ALWAYS);
+            button.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent event) {
+
+                    infoSelectedProduct = salesProduct;
+
+                    loadDependentView("prodwsdetails.fxml");
+                }
+            });
+        }
+
+        @Override
+        protected void updateItem(SalesProduct item, boolean empty) {
+            super.updateItem(item, empty);
+            setText(null);  // No text in label of super class
+            if (empty) {
+                salesProduct = null;
+                setGraphic(null);
+            } else {
+                salesProduct = item;
+                label.setMaxWidth(200);
+                label.setWrapText(true);
+                label.setText(item!=null ? salesProduct.getName() + " (" + salesProduct.getGrossPriceValue() + " " + salesProduct.getGrossPriceCurrency() + ")" : "<null>");
+                setGraphic(hbox);
+            }
+        }
     }
 }

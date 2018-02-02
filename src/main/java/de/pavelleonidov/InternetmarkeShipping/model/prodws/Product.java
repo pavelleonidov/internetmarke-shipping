@@ -26,6 +26,21 @@ public class Product {
     protected String transport;
     protected String type;
     protected String state;
+    protected String minLength;
+    protected String maxLength;
+    protected String minHeight;
+    protected String maxHeight;
+    protected String minWidth;
+    protected String maxWidth;
+
+    protected String minWeight;
+    protected String maxWeight;
+
+    protected boolean trackingPossible;
+    protected String allowedForm;
+
+
+
     protected BigDecimal grossPriceValue;
     protected String grossPriceCurrency;
     protected boolean grossPriceCalculated;
@@ -255,5 +270,85 @@ public class Product {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getMinLength() {
+        return minLength;
+    }
+
+    public void setMinLength(String minLength) {
+        this.minLength = minLength;
+    }
+
+    public String getMaxLength() {
+        return maxLength;
+    }
+
+    public void setMaxLength(String maxLength) {
+        this.maxLength = maxLength;
+    }
+
+    public String getMinWeight() {
+        return minWeight;
+    }
+
+    public void setMinWeight(String minWeight) {
+        this.minWeight = minWeight;
+    }
+
+    public String getMaxWeight() {
+        return maxWeight;
+    }
+
+    public void setMaxWeight(String maxWeight) {
+        this.maxWeight = maxWeight;
+    }
+
+    public boolean isTrackingPossible() {
+        return trackingPossible;
+    }
+
+    public void setTrackingPossible(boolean trackingPossible) {
+        this.trackingPossible = trackingPossible;
+    }
+
+    public String getAllowedForm() {
+        return allowedForm;
+    }
+
+    public void setAllowedForm(String allowedForm) {
+        this.allowedForm = allowedForm;
+    }
+
+    public String getMaxHeight() {
+        return maxHeight;
+    }
+
+    public void setMaxHeight(String maxHeight) {
+        this.maxHeight = maxHeight;
+    }
+
+    public String getMinHeight() {
+        return minHeight;
+    }
+
+    public void setMinHeight(String minHeight) {
+        this.minHeight = minHeight;
+    }
+
+    public String getMinWidth() {
+        return minWidth;
+    }
+
+    public void setMinWidth(String minWidth) {
+        this.minWidth = minWidth;
+    }
+
+    public String getMaxWidth() {
+        return maxWidth;
+    }
+
+    public void setMaxWidth(String maxWidth) {
+        this.maxWidth = maxWidth;
     }
 }

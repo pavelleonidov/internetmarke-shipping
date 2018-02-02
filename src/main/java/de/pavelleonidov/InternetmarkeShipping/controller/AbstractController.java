@@ -17,6 +17,7 @@ public class AbstractController {
         FXMLLoader loader = new FXMLLoader();
         loader.setLocation(getClass().getResource("/de/pavelleonidov/InternetmarkeShipping/view/" + fxmlPath));
 
+
         try {
             loader.load();
         } catch (IOException e) {
