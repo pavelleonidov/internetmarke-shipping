@@ -17,7 +17,7 @@ public class Main extends AbstractJavaFxApplicationSupport {
 
 	public static void main(String[] args) {
 
-		homeDirectory = FileUtils.getUserDirectoryPath() + "/.allaboutapple/";
+		homeDirectory = FileUtils.getUserDirectoryPath() + "/.allaboutapple";
 		File file = new File(homeDirectory);
 		if (!file.exists()) {
 			try {

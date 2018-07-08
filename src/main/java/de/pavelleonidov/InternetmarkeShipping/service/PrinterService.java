@@ -154,9 +154,9 @@ public class PrinterService {
 
             if(getSettings().isLabelPrinter()) {
 
-                int height = 380 + 30 * ((isInternational ? 1 : 0) + (hasCompanyName ? 1 : 0));
+                int height = 440 + 30 * ((isInternational ? 1 : 0) + (hasCompanyName ? 1 : 0));
 
-                BufferedImage imagePart = image.getSubimage(150,350, 1000, height);
+                BufferedImage imagePart = image.getSubimage(150,350, 1050, height);
                 convertedImage = SwingFXUtils.toFXImage(imagePart, null);
 
                 imageView.setImage(convertedImage);

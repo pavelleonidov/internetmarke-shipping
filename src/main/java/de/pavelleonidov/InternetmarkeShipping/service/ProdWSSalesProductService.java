@@ -27,7 +27,7 @@ public class ProdWSSalesProductService extends ProdWSProductService<SalesProduct
     }
 
     public ProdWSSalesProductService() {
-        setFileName(Main.getHomeDirectory() + "prodws_sales_products.xml");
+        setFileName(Main.getHomeDirectory() + "/prodws_sales_products.xml");
     }
 
     public SalesProductList getProducts() {

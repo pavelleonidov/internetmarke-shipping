@@ -19,7 +19,7 @@ public class SettingsXmlService extends MarshalService<Settings> {
     }
 
     public SettingsXmlService() {
-        setFileName(Main.getHomeDirectory() + "settings.xml");
+        setFileName(Main.getHomeDirectory() + "/settings.xml");
     }
 
 

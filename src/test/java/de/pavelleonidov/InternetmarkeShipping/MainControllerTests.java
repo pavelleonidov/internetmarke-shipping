@@ -13,7 +13,7 @@ public class MainControllerTests {
     public void addressName() {
         MainController mainController = new MainController();
 
-        String[] streets = {"Schubartstr. 2C", "Musterstr.23", "F3 6", "Beim Schwefelbad 30", "Schreiberskamp2", "Poelring 9", "Waldhofstraße 12", "Georg-Friedrich-Händel-Straße 23"};
+        String[] streets = {"Schubartstr. 2C", "Musterstr.23", "F3 6", "Beim Schwefelbad 30", "Schreiberskamp2", "Poelring 9", "Waldhofstraße 12", "Georg-Friedrich-Händel-Straße 23", "Musterstr., 3", "Maximilian-Geiger-Str._ 4C", "Korsorsstra�e 22"};
 
         try {
             Method parseStreet = mainController.getClass().getDeclaredMethod("parseStreet", String.class);
@@ -33,6 +33,9 @@ public class MainControllerTests {
                 assertEquals("Poelring", parseStreet.invoke(mainController, streets[5]));
                 assertEquals("Waldhofstraße", parseStreet.invoke(mainController, streets[6]));
                 assertEquals("Georg-Friedrich-Händel-Straße", parseStreet.invoke(mainController, streets[7]));
+                assertEquals("Musterstr.", parseStreet.invoke(mainController, streets[8]));
+                assertEquals("Maximilian-Geiger-Str.", parseStreet.invoke(mainController, streets[9]));
+                assertEquals("Korsorsstraße", parseStreet.invoke(mainController, streets[10]));
 
                 assertEquals("2C", parseHouseNumber.invoke(mainController, streets[0]));
                 assertEquals("23", parseHouseNumber.invoke(mainController, streets[1]));
@@ -42,6 +45,9 @@ public class MainControllerTests {
                 assertEquals("9", parseHouseNumber.invoke(mainController, streets[5]));
                 assertEquals("12", parseHouseNumber.invoke(mainController, streets[6]));
                 assertEquals("23", parseHouseNumber.invoke(mainController, streets[7]));
+                assertEquals("3", parseHouseNumber.invoke(mainController, streets[8]));
+                assertEquals("4C", parseHouseNumber.invoke(mainController, streets[9]));
+                assertEquals("22", parseHouseNumber.invoke(mainController, streets[10]));
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             } catch (InvocationTargetException e) {

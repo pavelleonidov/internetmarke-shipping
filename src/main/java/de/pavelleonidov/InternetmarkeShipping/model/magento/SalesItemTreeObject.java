@@ -20,7 +20,8 @@ public class SalesItemTreeObject extends TreeObject<SalesItemTreeObject> {
 
         setName(product.getName());
         setSku(product.getSku());
-        setPrice(product.getBaseOriginalPrice().toString());
+
+        setPrice(product.getBasePriceInclTax().toString());
         setQuantity(product.getQtyOrdered().toString());
 
     }

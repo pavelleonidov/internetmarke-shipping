@@ -29,6 +29,9 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.cell.ComboBoxListCell;
+import javafx.scene.layout.AnchorPane;
+import javafx.stage.DirectoryChooser;
+import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 import org.apache.commons.io.Charsets;
@@ -49,6 +52,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 @FXMLController
 public class SettingsController extends AbstractController {
 
+
+    @FXML
+    private AnchorPane anchorPane;
 
     @FXML
     private JFXTextField magentoApiUrlLabel;
@@ -131,6 +137,19 @@ public class SettingsController extends AbstractController {
     @FXML
     private JFXCheckBox checkLabelPrinter;
 
+
+    @FXML
+    private JFXTextField internetmarkeDestination;
+
+    @FXML
+    private JFXTextField invoiceDestination;
+
+    @FXML
+    private JFXButton chooseInternetmarkeDestinationButton;
+
+    @FXML
+    private JFXButton chooseInvoiceDestinationButton;
+
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("ddMMyyyy-HHmmss");
 
     private static final ZoneId ZONE_ID = ZoneId.of("Europe/Berlin");
@@ -174,6 +193,9 @@ public class SettingsController extends AbstractController {
         printerSelect.getSelectionModel().select(getSettings().getCurrentPrinter());
 
         pcfOneClickBalance.setText(InternetmarkeService.getInstance().getFormattedWalletBalance());
+
+        internetmarkeDestination.setText(getSettings().getInternetmarkeDestination());
+        invoiceDestination.setText(getSettings().getInvoiceDestination());
 
         SalesProductList productList = ProdWSSalesProductService.getInstance().getProducts();
 
@@ -291,6 +313,35 @@ public class SettingsController extends AbstractController {
 
     }
 
+    public void chooseInternetmarkeDestination(final Event e) {
+
+        Stage stage = (Stage) anchorPane.getScene().getWindow();
+
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        File selectedDirectory =
+                directoryChooser.showDialog(stage);
+
+        if(selectedDirectory != null){
+            internetmarkeDestination.setText(selectedDirectory.getAbsolutePath());
+            fillSettingsModel();
+        }
+    }
+
+    public void chooseInvoiceDestination(final Event e) {
+        Stage stage = (Stage) anchorPane.getScene().getWindow();
+
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        File selectedDirectory =
+                directoryChooser.showDialog(stage);
+
+        if(selectedDirectory != null){
+            invoiceDestination.setText(selectedDirectory.getAbsolutePath());
+            fillSettingsModel();
+        }
+    }
+
+
+
     private void fillSettingsModel() {
         settings.setMagento2AccessToken(magentoAccessTokenLabel.getText());
         settings.setMagento2ApiUrl(magentoApiUrlLabel.getText());
@@ -313,6 +364,9 @@ public class SettingsController extends AbstractController {
         settings.setSenderStreet(senderStreet.getText());
         settings.setSenderHouseNumber(senderHouseNumber.getText());
 
+        settings.setInternetmarkeDestination(internetmarkeDestination.getText());
+        settings.setInvoiceDestination(invoiceDestination.getText());
+
     }
 
     public static Settings getSettings() {
@@ -324,7 +378,7 @@ public class SettingsController extends AbstractController {
     }
 
     private static void initSettings() {
-        File settingsFile = new File(Main.getHomeDirectory() + "settings.xml");
+        File settingsFile = new File(Main.getHomeDirectory() + "/settings.xml");
 
         if (settingsFile.exists()) {
             System.out.println("File exists");

@@ -32,6 +32,9 @@ public class Settings {
     private int currentPrinter;
     private boolean isLabelPrinter;
 
+    private String internetmarkeDestination;
+    private String invoiceDestination;
+
     public String getMagento2ApiUrl() {
         return magento2ApiUrl;
     }
@@ -182,5 +185,21 @@ public class Settings {
 
     public void setLabelPrinter(boolean labelPrinter) {
         isLabelPrinter = labelPrinter;
+    }
+
+    public String getInternetmarkeDestination() {
+        return internetmarkeDestination;
+    }
+
+    public void setInternetmarkeDestination(String internetmarkeDestination) {
+        this.internetmarkeDestination = internetmarkeDestination;
+    }
+
+    public String getInvoiceDestination() {
+        return invoiceDestination;
+    }
+
+    public void setInvoiceDestination(String invoiceDestination) {
+        this.invoiceDestination = invoiceDestination;
     }
 }

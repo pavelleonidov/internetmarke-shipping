@@ -18,12 +18,16 @@ import de.pavelleonidov.InternetmarkeShipping.utility.magento.SalesItemColumnFac
 import de.pavelleonidov.InternetmarkeShipping.view.SettingsView;
 import com.jfoenix.controls.datamodels.treetable.RecursiveTreeObject;
 import de.felixroske.jfxsupport.FXMLController;
+import io.swagger.client.ApiClient;
 import io.swagger.client.ApiException;
+
+
 
 import io.swagger.client.api.CustomerAddressRepositoryV1Api;
 import io.swagger.client.api.SalesOrderManagementV1Api;
 import io.swagger.client.api.SalesRefundOrderV1Api;
 import io.swagger.client.api.SalesShipOrderV1Api;
+import io.swagger.client.model.Body10;
 import io.swagger.client.model.Body95;
 import io.swagger.client.model.Body99;
 import io.swagger.client.model.SalesDataCreditmemoItemCreationInterface;
@@ -47,15 +51,17 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.Callback;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
@@ -80,6 +86,8 @@ import java.util.stream.Collectors;
 
 @FXMLController
 public class MainController extends AbstractController {
+
+
 
     @FXML
     private JFXTreeTableView<OrderTreeObject> magentoCustomerTable;
@@ -153,7 +161,11 @@ public class MainController extends AbstractController {
 
     protected static io.swagger.client.api.CustomerCustomerRepositoryV1Api customerCustomerRepositoryV1Api = new io.swagger.client.api.CustomerCustomerRepositoryV1Api();
 
+    protected static SalesShipOrderV1Api salesShip = new SalesShipOrderV1Api();
 
+    protected static io.swagger.client.api.PavelLeonidovWebApiOrderInvoiceOrderInvoiceV1Api invoiceApi = new io.swagger.client.api.PavelLeonidovWebApiOrderInvoiceOrderInvoiceV1Api();
+
+    protected static io.swagger.client.api.PavelLeonidovWebApiRestPdfPdfInvoiceRepositoryV1Api invoicePdfApi = new io.swagger.client.api.PavelLeonidovWebApiRestPdfPdfInvoiceRepositoryV1Api();
 
     @FXML
     void initialize() {
@@ -161,6 +173,21 @@ public class MainController extends AbstractController {
         customerCustomerRepositoryV1Api.getApiClient().setAccessToken(SettingsController.getSettings().getMagento2AccessToken());
         customerCustomerRepositoryV1Api.getApiClient().setBasePath(SettingsController.getSettings().getMagento2ApiUrl());
         customerCustomerRepositoryV1Api.getApiClient().getHttpClient().setReadTimeout(30, TimeUnit.SECONDS);
+
+        salesShip.getApiClient().setAccessToken(SettingsController.getSettings().getMagento2AccessToken());
+        salesShip.getApiClient().setBasePath(SettingsController.getSettings().getMagento2ApiUrl());
+        salesShip.getApiClient().getHttpClient().setReadTimeout(30, TimeUnit.SECONDS);
+
+        invoiceApi.getApiClient().setAccessToken(SettingsController.getSettings().getMagento2AccessToken());
+        invoiceApi.getApiClient().setBasePath(SettingsController.getSettings().getMagento2ApiUrl());
+        invoiceApi.getApiClient().getHttpClient().setReadTimeout(30, TimeUnit.SECONDS);
+
+        invoicePdfApi.getApiClient().setAccessToken(SettingsController.getSettings().getMagento2AccessToken());
+        invoicePdfApi.getApiClient().setBasePath(SettingsController.getSettings().getMagento2ApiUrl());
+        invoicePdfApi.getApiClient().getHttpClient().setReadTimeout(30, TimeUnit.SECONDS);
+
+      //  invoicePdfApi = new io.swagger.client.api.PavelLeonidovWebApiRestPdfPdfInvoiceRepositoryV1Api(invoiceClient);
+
 
         startThread();
 
@@ -262,8 +289,13 @@ public class MainController extends AbstractController {
 
                 io.swagger.client.model.SalesDataOrderAddressInterface address = magentoOrder.getExtensionAttributes().getShippingAssignments().get(0).getShipping().getAddress();
 
+                String internetmarkeFolder = SettingsController.getSettings().getInternetmarkeDestination();
 
-                File currentLabelFile = new File(Main.getHomeDirectory() + "marke-" + magentoOrder.getIncrementId() + "-" + address.getFirstname().trim().replaceAll("[^a-zA-Z]", "") + "-" + address.getLastname().trim().replaceAll("[^a-zA-Z]", "") + "-" +  product.getId() + ".pdf");
+                if(internetmarkeFolder.isEmpty()) {
+                    internetmarkeFolder = Main.getHomeDirectory();
+                }
+
+                File currentLabelFile = new File(internetmarkeFolder + "/marke-" + magentoOrder.getIncrementId() + "-" + address.getFirstname().trim().replaceAll("[^a-zA-Z]", "") + "-" + address.getLastname().trim().replaceAll("[^a-zA-Z]", "") + "-" +  product.getId() + ".pdf");
                 if(currentLabelFile.exists()) {
                     try {
 
@@ -296,19 +328,17 @@ public class MainController extends AbstractController {
 
         selectedOrdersObservable = magentoCustomerTable.getSelectionModel().getSelectedItems();
         if(!selectedOrdersObservable.isEmpty()) {
+
+
             selectedOrdersObservable.forEach(item -> {
                 io.swagger.client.model.SalesDataOrderInterface magentoOrder = item.getValue().getResponseOrder();
+                io.swagger.client.model.SalesDataOrderAddressInterface address = magentoOrder.getExtensionAttributes().getShippingAssignments().get(0).getShipping().getAddress();
 
-
-
-                SalesShipOrderV1Api salesShip = new SalesShipOrderV1Api();
-                salesShip.getApiClient().setAccessToken(SettingsController.getSettings().getMagento2AccessToken());
-                salesShip.getApiClient().setBasePath(SettingsController.getSettings().getMagento2ApiUrl());
-                salesShip.getApiClient().getHttpClient().setReadTimeout(30, TimeUnit.SECONDS);
 
 
                 io.swagger.client.model.Body99 shipBody = new Body99();
                 shipBody.setNotify(Boolean.TRUE);
+
 
                 try {
 
@@ -320,6 +350,59 @@ public class MainController extends AbstractController {
                     e1.printStackTrace();
                 }
 
+                try {
+                    // @see https://github.com/pavelleonidov/magento2-webapi-orderinvoice
+                    Integer invoiceId = invoiceApi.pavelLeonidovWebApiOrderInvoiceOrderInvoiceV1ExecuteGet(magentoOrder.getEntityId()).getEntityId();
+
+                    if(invoiceId != null) {
+                        String invoiceResponse = null;
+                        try {
+                            // @see https://github.com/pavelleonidov/magento2-webapi-pdfinvoice
+                            invoiceResponse = invoicePdfApi.pavelLeonidovWebApiRestPdfPdfInvoiceRepositoryV1GetInvoiceForExportInPdfFormatGet(invoiceId);
+                            try {
+                                // Decode stream and save to PDF
+                                if (!invoiceResponse.isEmpty()) {
+
+                                    String invoicePath = SettingsController.getSettings().getInvoiceDestination();
+
+                                    if(invoicePath.isEmpty()) {
+                                        invoicePath = Main.getHomeDirectory() + "Invoices";
+                                    }
+
+                                    File invoiceDirectory = new File(invoicePath);
+                                    if (!invoiceDirectory.exists()) {
+                                        try {
+                                            invoiceDirectory.mkdirs();
+                                        } catch (Exception e3) {
+                                            e3.printStackTrace();
+                                        }
+
+                                    }
+                                    String fileName = "Invoice-" + magentoOrder.getIncrementId() + "-" + address.getFirstname() + address.getLastname() + ".pdf";
+
+                                    File invoiceFile = new File(invoiceDirectory.getPath() + '/' + fileName);
+                                    byte[] stream = Base64.getDecoder().decode(invoiceResponse);
+                                    FileOutputStream fos = new FileOutputStream(invoiceFile);
+                                    fos.write(stream);
+                                    fos.close();
+                                }
+
+
+                            } catch (IOException e1) {
+                                e1.printStackTrace();
+                            }
+                        } catch (ApiException e1) {
+                            e1.printStackTrace();
+                        }
+
+
+
+                    }
+
+                } catch (ApiException e1) {
+                    e1.printStackTrace();
+                    System.out.println(e1.getResponseBody());
+                }
 
                 try {
                     Thread.sleep(1000);
@@ -328,7 +411,10 @@ public class MainController extends AbstractController {
                 }
             });
 
+
             fullRefreshOrders(null);
+
+
         }
 
     }
@@ -342,12 +428,14 @@ public class MainController extends AbstractController {
             salesOrderManagement.getApiClient().setBasePath(SettingsController.getSettings().getMagento2ApiUrl());
             salesOrderManagement.getApiClient().getHttpClient().setReadTimeout(30, TimeUnit.SECONDS);
 
+
             try {
 
                 salesOrderManagement.salesOrderManagementV1CancelPost(currentOrder.getEntityId());
                 fullRefreshOrders(event);
             } catch (ApiException e) {
                 e.printStackTrace();
+
                 System.out.println(e.getResponseBody());
             }
         } else {
@@ -466,6 +554,7 @@ public class MainController extends AbstractController {
                 orderApi.getApiClient().setAccessToken(SettingsController.getSettings().getMagento2AccessToken());
                 orderApi.getApiClient().setBasePath(SettingsController.getSettings().getMagento2ApiUrl());
                 orderApi.getApiClient().getHttpClient().setReadTimeout(30, TimeUnit.SECONDS);
+
 
                 DateFormat localDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
                 localDateFormat.setTimeZone(TimeZone.getTimeZone(ZoneId.of("Europe/Berlin")));
@@ -598,16 +687,21 @@ public class MainController extends AbstractController {
                             if(fullRefresh) {
                                 cleanAllViews();
                                 lastExecution = null;
+
                             }
 
                             if(lastExecution == null) {
+
+
+
+
                                 orders = orderApi.salesOrderRepositoryV1GetListGet(
                                         "status",
                                         "processing",
                                         "eq",
                                         "created_at",
                                         "asc",
-                                        100,
+                                        250,
                                         1,
                                         isShowNonPaid() ? "status" : null,
                                         isShowNonPaid() ? "pending" : null,
@@ -616,6 +710,7 @@ public class MainController extends AbstractController {
                                         "2018-01-08 00:00:00",
                                         "gt"
                                 );
+
                                 //System.out.println(orders.getItems());
 
                             } else {
@@ -707,7 +802,9 @@ public class MainController extends AbstractController {
                         } catch (io.swagger.client.ApiException e) {
                             e.printStackTrace();
 
+
                             System.out.println(e.getResponseBody());
+                            System.out.println("TEST");
                         }
                     }
 
@@ -750,7 +847,15 @@ public class MainController extends AbstractController {
             URL url = new URL(targetProduct);
             InputStream in = url.openStream();
 
-            String targetFileName = Main.getHomeDirectory() + "marke-" + magentoOrder.getIncrementId() + "-" + address.getFirstname().trim().replaceAll("[^a-zA-Z]", "") + "-" + address.getLastname().trim().replaceAll("[^a-zA-Z]", "") + "-" + product.getId() + ".pdf";
+            String internetmarkeFolder = SettingsController.getSettings().getInternetmarkeDestination();
+
+            if(internetmarkeFolder.isEmpty()) {
+                internetmarkeFolder = Main.getHomeDirectory();
+            }
+
+            String targetFileName = internetmarkeFolder + "/marke-" + magentoOrder.getIncrementId() + "-" + address.getFirstname().trim().replaceAll("[^a-zA-Z]", "") + "-" + address.getLastname().trim().replaceAll("[^a-zA-Z]", "") + "-" + product.getId() + ".pdf";
+
+
 
             Files.copy(in, Paths.get(targetFileName), StandardCopyOption.REPLACE_EXISTING);
 
@@ -776,6 +881,7 @@ public class MainController extends AbstractController {
 
         if(productList != null) {
             productList.getProducts().forEach((item) -> {
+
                 File currentDownloadedProduct = new File(Main.getHomeDirectory() + "marke-" + orderId + "-" + item.getId() + ".pdf");
                 if(currentDownloadedProduct.exists()) {
                     if(currentDownloadedProduct.delete()) {
@@ -833,12 +939,17 @@ public class MainController extends AbstractController {
 
     private String parseStreet(String str) {
         // Special case: Mannheim's square city
+
+        str = str.replaceAll("[,_!]", "");
+        str = str.replaceAll("�", "ß");
         Matcher matchSquare = Pattern.compile("^([a-zA-Z])\\d").matcher(str);
         if(matchSquare.find()) {
             return matchSquare.group(0).trim();
         } else {
+
+
             // All other street names, including missing whitespaces between street and house number
-            Matcher match = Pattern.compile("^([a-zA-ZäöüÄÖÜß.\\-\\s])+(?=[0-9])").matcher(str);
+            Matcher match = Pattern.compile("^([a-zA-ZäöüÄÖÜß.�\\-\\s])+(?=[0-9])").matcher(str);
 
             if (match.find()) {
                 return match.group(0).trim();
