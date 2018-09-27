@@ -1,5 +1,6 @@
 package de.pavelleonidov.InternetmarkeShipping.service;
 
+import com.sun.xml.internal.ws.fault.ServerSOAPFaultException;
 import de.pavelleonidov.InternetmarkeShipping.controller.SettingsController;
 import de.pavelleonidov.InternetmarkeShipping.model.Settings;
 import de.pavelleonidov.InternetmarkeShipping.service.internetmarke.*;
@@ -105,20 +106,28 @@ public class InternetmarkeService {
         if(difference > 59) {
             init();
 
-            try {
-                AuthenticateUserRequestType internetmarkeRequest = new AuthenticateUserRequestType();
-                internetmarkeRequest.setUsername(getSettings().getPcfOneClickUsername());
-                internetmarkeRequest.setPassword(getSettings().getPcfOneClickPassword());
+            if(getSettings().getPcfOneClickUsername() != null && getSettings().getPcfOneClickPassword() != null) {
+                try {
+                    AuthenticateUserRequestType internetmarkeRequest = new AuthenticateUserRequestType();
+                    internetmarkeRequest.setUsername(getSettings().getPcfOneClickUsername());
+                    internetmarkeRequest.setPassword(getSettings().getPcfOneClickPassword());
 
-                AuthenticateUserResponseType authenticationResponse = port.authenticateUser(internetmarkeRequest);
-                userToken = authenticationResponse.getUserToken();
-                setWalletBalance(authenticationResponse.getWalletBalance());
-                lastTokenRequestTime = LocalDateTime.now();
-                System.out.println(authenticationResponse.getInfoMessage());
-            } catch (AuthenticateUserException_Exception e) {
-                e.printStackTrace();
-                userToken = "";
+                    AuthenticateUserResponseType authenticationResponse = port.authenticateUser(internetmarkeRequest);
+                    userToken = authenticationResponse.getUserToken();
+                    setWalletBalance(authenticationResponse.getWalletBalance());
+                    lastTokenRequestTime = LocalDateTime.now();
+                    System.out.println(authenticationResponse.getInfoMessage());
+                } catch (AuthenticateUserException_Exception e) {
+                    e.printStackTrace();
+                    userToken = "";
+                } catch (ServerSOAPFaultException f) {
+                    f.printStackTrace();
+                    userToken = "";
+                }
+            } else {
+                System.out.println("Username and password for the Internetmarke account are missing!");
             }
+
 
         }
         return userToken;
