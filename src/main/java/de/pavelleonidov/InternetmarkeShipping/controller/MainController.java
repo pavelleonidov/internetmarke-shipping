@@ -3,6 +3,7 @@ package de.pavelleonidov.InternetmarkeShipping.controller;
 import com.jfoenix.controls.*;
 import de.felixroske.jfxsupport.AbstractFxmlView;
 import de.pavelleonidov.InternetmarkeShipping.Main;
+import de.pavelleonidov.InternetmarkeShipping.model.internetmarke.OrderedProduct;
 import de.pavelleonidov.InternetmarkeShipping.model.magento.OrderDetailsTreeObject;
 import de.pavelleonidov.InternetmarkeShipping.model.magento.OrderTreeObject;
 import de.pavelleonidov.InternetmarkeShipping.model.magento.SalesItemTreeObject;
@@ -27,7 +28,6 @@ import io.swagger.client.api.CustomerAddressRepositoryV1Api;
 import io.swagger.client.api.SalesOrderManagementV1Api;
 import io.swagger.client.api.SalesRefundOrderV1Api;
 import io.swagger.client.api.SalesShipOrderV1Api;
-import io.swagger.client.model.Body10;
 import io.swagger.client.model.Body95;
 import io.swagger.client.model.Body99;
 import io.swagger.client.model.SalesDataCreditmemoItemCreationInterface;
@@ -53,6 +53,7 @@ import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 
 import java.io.*;
@@ -242,7 +243,8 @@ public class MainController extends AbstractController {
 
                 io.swagger.client.model.SalesDataOrderInterface magentoOrder = item.getValue().getResponseOrder();
 
-                String internetmarkeLabelFile = prepareInternetmarkeLabel(magentoOrder);
+                OrderedProduct internetmarkeProduct = prepareInternetmarkeLabel(magentoOrder);
+                String internetmarkeLabelFile = internetmarkeProduct.getTargetFileName();
 
                 if(!internetmarkeLabelFile.isEmpty()) {
                     try {
@@ -258,6 +260,18 @@ public class MainController extends AbstractController {
 
                         PrinterService.getInstance().printDocument(document, isInternational, hasCompanyName, "Printing Internetmarke for order " + orderId);
                         walletBalance.setText(InternetmarkeService.getInstance().getFormattedWalletBalance());
+
+                        System.out.println("Main TrackId: " + internetmarkeProduct.getTrackId());
+                        if(StringUtils.isNotBlank(internetmarkeProduct.getTrackId())) {
+                            System.out.println(internetmarkeProduct.getTrackId());
+
+                            // Track id / Voucher ID of given ProdWS product
+                            item.getValue().setTrackId(internetmarkeProduct.getTrackId());
+                        }
+
+                        // needed to separate voucher id's from non-trackable ProdWS products
+                        item.getValue().setTrackingPossible(internetmarkeProduct.isTrackingPossible());
+
                     } catch (IOException e1) {
                         e1.printStackTrace();
                     }
@@ -334,11 +348,19 @@ public class MainController extends AbstractController {
                 io.swagger.client.model.SalesDataOrderInterface magentoOrder = item.getValue().getResponseOrder();
                 io.swagger.client.model.SalesDataOrderAddressInterface address = magentoOrder.getExtensionAttributes().getShippingAssignments().get(0).getShipping().getAddress();
 
-
-
                 io.swagger.client.model.Body99 shipBody = new Body99();
                 shipBody.setNotify(Boolean.TRUE);
 
+
+                if(StringUtils.isNotBlank(item.getValue().getTrackId().getValue()) && item.getValue().isTrackingPossible().getValue().equals("Yes")) {
+                    io.swagger.client.model.SalesDataShipmentTrackCreationInterface trackItem = new io.swagger.client.model.SalesDataShipmentTrackCreationInterface();
+
+                    trackItem.setCarrierCode("deutschepost");
+                    trackItem.setTitle("Deutsche Post");
+                    trackItem.setTrackNumber(item.getValue().getTrackId().getValue());
+
+                    shipBody.addTracksItem(trackItem);
+                }
 
                 try {
 
@@ -378,7 +400,7 @@ public class MainController extends AbstractController {
                                         }
 
                                     }
-                                    String fileName = "Invoice-" + magentoOrder.getIncrementId() + "-" + address.getFirstname() + address.getLastname() + ".pdf";
+                                    String fileName = "Invoice-" + magentoOrder.getIncrementId() + "-" + address.getFirstname().trim().replaceAll("[^a-zA-Z]", "") + '-' + address.getLastname().trim().replaceAll("[^a-zA-Z]", "") + ".pdf";
 
                                     File invoiceFile = new File(invoiceDirectory.getPath() + '/' + fileName);
                                     byte[] stream = Base64.getDecoder().decode(invoiceResponse);
@@ -827,9 +849,10 @@ public class MainController extends AbstractController {
 
     }
 
-    protected String prepareInternetmarkeLabel(io.swagger.client.model.SalesDataOrderInterface magentoOrder) {
+    protected OrderedProduct prepareInternetmarkeLabel(io.swagger.client.model.SalesDataOrderInterface magentoOrder) {
 
         SalesProduct product = selectedProduct.get();
+
 
         io.swagger.client.model.SalesDataOrderAddressInterface address = magentoOrder.getExtensionAttributes().getShippingAssignments().get(0).getShipping().getAddress();
 
@@ -841,10 +864,11 @@ public class MainController extends AbstractController {
         int totalValue = product.getGrossPriceValue().multiply(new BigDecimal(100)).intValueExact();
 
 
-        String targetProduct = InternetmarkeService.getInstance().getProduct(Integer.parseInt(product.getId()), address.getFirstname(), address.getLastname(), address.getCompany(), address.getPostcode(), address.getCity(), street, houseNumber, iso2CountryCodeToIso3CountryCode(address.getCountryId()), totalValue);
+        OrderedProduct targetProduct = InternetmarkeService.getInstance().getProduct(Integer.parseInt(product.getId()), address.getFirstname(), address.getLastname(), address.getCompany(), address.getPostcode(), address.getCity(), street, houseNumber, iso2CountryCodeToIso3CountryCode(address.getCountryId()), totalValue);
 
        try {
-            URL url = new URL(targetProduct);
+
+            URL url = new URL(targetProduct.getLink());
             InputStream in = url.openStream();
 
             String internetmarkeFolder = SettingsController.getSettings().getInternetmarkeDestination();
@@ -855,22 +879,23 @@ public class MainController extends AbstractController {
 
             String targetFileName = internetmarkeFolder + "/marke-" + magentoOrder.getIncrementId() + "-" + address.getFirstname().trim().replaceAll("[^a-zA-Z]", "") + "-" + address.getLastname().trim().replaceAll("[^a-zA-Z]", "") + "-" + product.getId() + ".pdf";
 
-
-
             Files.copy(in, Paths.get(targetFileName), StandardCopyOption.REPLACE_EXISTING);
 
-            return targetFileName;
+            targetProduct.setTargetFileName(targetFileName);
+            targetProduct.setTrackingPossible(product.isTrackingPossible());
+
+            return targetProduct;
 
         } catch (MalformedURLException e1) {
             e1.printStackTrace();
-            return "";
+            return null;
         } catch (IOException e1) {
             e1.printStackTrace();
-            return "";
+            return null;
         }
     }
 
-    protected String prepareInternetmarkeLabel() {
+    protected OrderedProduct prepareInternetmarkeLabel() {
         return prepareInternetmarkeLabel(selectedOrder.get());
     }
 

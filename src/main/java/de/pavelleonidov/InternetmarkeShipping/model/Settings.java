@@ -34,6 +34,7 @@ public class Settings {
 
     private String internetmarkeDestination;
     private String invoiceDestination;
+    private String trackNumbersDestination;
 
     public String getMagento2ApiUrl() {
         return magento2ApiUrl;
@@ -201,5 +202,13 @@ public class Settings {
 
     public void setInvoiceDestination(String invoiceDestination) {
         this.invoiceDestination = invoiceDestination;
+    }
+
+    public String getTrackNumbersDestination() {
+        return trackNumbersDestination;
+    }
+
+    public void setTrackNumbersDestination(String trackNumbersDestination) {
+        this.trackNumbersDestination = trackNumbersDestination;
     }
 }

@@ -150,6 +150,12 @@ public class SettingsController extends AbstractController {
     @FXML
     private JFXButton chooseInvoiceDestinationButton;
 
+    @FXML
+    private JFXButton chooseTrackNumbersDestinationButton;
+
+    @FXML
+    private JFXTextField trackNumbersDestination;
+
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("ddMMyyyy-HHmmss");
 
     private static final ZoneId ZONE_ID = ZoneId.of("Europe/Berlin");
@@ -340,7 +346,19 @@ public class SettingsController extends AbstractController {
         }
     }
 
+    @FXML
+    void chooseTrackNumbersDestination(final Event e) {
+        Stage stage = (Stage) anchorPane.getScene().getWindow();
 
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        File selectedDirectory =
+                directoryChooser.showDialog(stage);
+
+        if(selectedDirectory != null){
+            trackNumbersDestination.setText(selectedDirectory.getAbsolutePath());
+            fillSettingsModel();
+        }
+    }
 
     private void fillSettingsModel() {
         settings.setMagento2AccessToken(magentoAccessTokenLabel.getText());
@@ -366,6 +384,7 @@ public class SettingsController extends AbstractController {
 
         settings.setInternetmarkeDestination(internetmarkeDestination.getText());
         settings.setInvoiceDestination(invoiceDestination.getText());
+        settings.setTrackNumbersDestination(trackNumbersDestination.getText());
 
     }
 

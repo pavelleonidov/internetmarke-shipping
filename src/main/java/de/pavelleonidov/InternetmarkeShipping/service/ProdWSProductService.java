@@ -8,6 +8,7 @@ import de.pavelleonidov.InternetmarkeShipping.service.prodws.GetProductListReque
 import de.pavelleonidov.InternetmarkeShipping.service.prodws.GetProductListResponse;
 import de.pavelleonidov.InternetmarkeShipping.service.prodws.ProdWSPortType;
 import de.pavelleonidov.InternetmarkeShipping.service.prodws.ProdWSService;
+import de.pavelleonidov.InternetmarkeShipping.utility.handler.soap.SOAPMessageWriterHandler;
 import de.pavelleonidov.InternetmarkeShipping.utility.handler.soap.WSSecurityHeaderSOAPHandler;
 import de.pavelleonidov.InternetmarkeShipping.controller.SettingsController;
 import de.pavelleonidov.InternetmarkeShipping.service.prodws.GetProductListRequestType;
@@ -45,6 +46,7 @@ abstract public class ProdWSProductService<T extends ProductList<? extends Produ
             List<Handler> handlerList = binding.getHandlerChain();
 
             handlerList.add(new WSSecurityHeaderSOAPHandler(getSettings().getProdWSUsername(), getSettings().getProdWSPassword()));
+            handlerList.add(new SOAPMessageWriterHandler());
 
             Map<String, Object> ctx = bindingProvider.getRequestContext();
 

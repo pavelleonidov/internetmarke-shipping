@@ -3,6 +3,7 @@ package de.pavelleonidov.InternetmarkeShipping.service;
 import com.sun.xml.internal.ws.fault.ServerSOAPFaultException;
 import de.pavelleonidov.InternetmarkeShipping.controller.SettingsController;
 import de.pavelleonidov.InternetmarkeShipping.model.Settings;
+import de.pavelleonidov.InternetmarkeShipping.model.internetmarke.OrderedProduct;
 import de.pavelleonidov.InternetmarkeShipping.service.internetmarke.*;
 import de.pavelleonidov.InternetmarkeShipping.service.internetmarke.Name;
 import de.pavelleonidov.InternetmarkeShipping.utility.handler.soap.SOAPMessageWriterHandler;
@@ -16,6 +17,7 @@ import org.apache.commons.io.Charsets;
 import org.apache.ws.security.WSConstants;
 import org.apache.ws.security.message.WSSecHeader;
 import org.apache.ws.security.message.WSSecUsernameToken;
+import org.codehaus.plexus.util.StringUtils;
 
 import javax.xml.namespace.QName;
 import javax.xml.soap.*;
@@ -72,8 +74,6 @@ public class InternetmarkeService {
 
         handlerList.add(new InternetmarkeHeaderSOAPHandler());
         handlerList.add(new SOAPMessageWriterHandler());
-
-
 
        // Map<String, Object> ctx = bindingProvider.getRequestContext();
        // ctx.put(BindingProvider.USERNAME_PROPERTY, getSettings().getPcfOneClickUsername());
@@ -167,7 +167,7 @@ public class InternetmarkeService {
 
     }
 
-    public String getProduct(int productId, String receiverFirstName, String receiverLastName, String receiverCompany, String receiverZip, String receiverCity, String receiverStreet, String receiverHouseNumber, String receiverCountry, int totalValue) {
+    public OrderedProduct getProduct(int productId, String receiverFirstName, String receiverLastName, String receiverCompany, String receiverZip, String receiverCity, String receiverStreet, String receiverHouseNumber, String receiverCountry, int totalValue) {
         init();
         ShoppingCartPDFRequestType pdfRequestType = new ShoppingCartPDFRequestType();
         pdfRequestType.setUserToken(authenticateAndGetToken());
@@ -251,15 +251,33 @@ public class InternetmarkeService {
 
         try {
             ShoppingCartResponseType shoppingCartResponse = port.checkoutShoppingCartPDF(pdfRequestType);
-            System.out.println(shoppingCartResponse.getLink());
+            //System.out.println("Link: " + shoppingCartResponse.getLink());
             setWalletBalance(walletBalance -= totalValue);
-            return shoppingCartResponse.getLink();
+
+
+            OrderedProduct orderedProduct = new OrderedProduct();
+            orderedProduct.setLink(shoppingCartResponse.getLink());
+
+            String trackId = shoppingCartResponse.getShoppingCart().getVoucherList().getVoucher().get(0).getTrackId();
+
+            // For most trackable ProdWS / Internetmarke products the track id is actually the same as the voucher id
+            if(StringUtils.isBlank(trackId)) {
+                trackId = shoppingCartResponse.getShoppingCart().getVoucherList().getVoucher().get(0).getVoucherId();
+            }
+
+            System.out.println("Track-ID: " + trackId);
+
+           // System.out.println("Track-ID: " + shoppingCartResponse.getShoppingCart().getVoucherList().getVoucher().get(0).getTrackId());
+           // System.out.println("Voucher-ID: " + shoppingCartResponse.getShoppingCart().getVoucherList().getVoucher().get(0).getVoucherId());
+            orderedProduct.setTrackId(trackId);
+            orderedProduct.setLink(shoppingCartResponse.getLink());
+            return orderedProduct;
         } catch (IdentifyException_Exception e) {
             e.printStackTrace();
-            return "";
+            return null;
         } catch (ShoppingCartValidationException_Exception e) {
             e.printStackTrace();
-            return "";
+            return null;
         }
 
 

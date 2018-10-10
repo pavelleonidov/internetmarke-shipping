@@ -10,7 +10,7 @@ import java.util.Map;
 
 public class SalesItemTreeObject extends TreeObject<SalesItemTreeObject> {
     Map<String, StringProperty> properties;
-    io.swagger.client.model.SalesDataOrderItemInterface responseProduct;
+    private io.swagger.client.model.SalesDataOrderItemInterface responseProduct;
 
     public SalesItemTreeObject(io.swagger.client.model.SalesDataOrderItemInterface product) {
 

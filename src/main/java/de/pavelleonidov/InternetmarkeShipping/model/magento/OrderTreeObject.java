@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 
 public class OrderTreeObject extends TreeObject<OrderTreeObject> {
 
-    io.swagger.client.model.SalesDataOrderInterface responseOrder;
+    private io.swagger.client.model.SalesDataOrderInterface responseOrder;
 
     public OrderTreeObject(io.swagger.client.model.SalesDataOrderInterface order) {
 
@@ -33,9 +33,11 @@ public class OrderTreeObject extends TreeObject<OrderTreeObject> {
         String formattedPaymentMethod = order.getPayment().getAdditionalInformation().get(0);
         String channel = "Magento";
 
+        // Special case: The order is imported from Amazon / eBay by Magento with the M2EPro connector
         if(paymentMethod.equals("m2epropayment")) {
             List<String> additionalPaymentInformation = order.getPayment().getAdditionalInformation();
 
+            // Payment gateway is stored in the additional attributes by M2EPro - display those instead of the default property
             channel = additionalPaymentInformation.get(0);
             formattedPaymentMethod = additionalPaymentInformation.get(1);
         }
@@ -132,6 +134,14 @@ public class OrderTreeObject extends TreeObject<OrderTreeObject> {
     public StringProperty getFirstItem() { return getProperty("firstItem"); }
 
     public void setFirstItem(String firstItem) { setProperty("firstItem", firstItem); }
+
+    public StringProperty getTrackId() { return getProperty("trackId"); }
+
+    public void setTrackId(String trackId) { setProperty("trackId", trackId); }
+
+    public StringProperty isTrackingPossible() { return getProperty("trackingPossible"); }
+
+    public void setTrackingPossible(Boolean trackingPossible) { setProperty("trackingPossible", (trackingPossible ? "Yes" : "No")); }
 
     public io.swagger.client.model.SalesDataOrderInterface getResponseOrder() {
         return responseOrder;
