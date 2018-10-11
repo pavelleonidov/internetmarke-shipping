@@ -258,8 +258,6 @@
                   <JFXTextField fx:id="invoiceDestination" GridPane.rowIndex="1" />
                   <JFXButton fx:id="chooseInternetmarkeDestinationButton" onAction="#chooseInternetmarkeDestination" prefHeight="27.0" prefWidth="255.0" style="-fx-background-color: #ddd;" text="Verzeichnis für Internetmarken" GridPane.columnIndex="1" />
                   <JFXButton fx:id="chooseInvoiceDestinationButton" onAction="#chooseInvoiceDestination" prefHeight="27.0" prefWidth="255.0" style="-fx-background-color: #ddd;" text="Verzeichnis für Rechnungen" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                  <JFXTextField fx:id="trackNumbersDestination" GridPane.rowIndex="2" />
-                  <JFXButton fx:id="chooseTrackNumbersDestinationButton" onAction="#chooseTrackNumbersDestination" prefHeight="27.0" prefWidth="255.0" style="-fx-background-color: #ddd;" text="Verzeichnis für Rechnungen" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                </children>
             </GridPane>
          </children></AnchorPane>

@@ -346,19 +346,6 @@ public class SettingsController extends AbstractController {
         }
     }
 
-    @FXML
-    void chooseTrackNumbersDestination(final Event e) {
-        Stage stage = (Stage) anchorPane.getScene().getWindow();
-
-        DirectoryChooser directoryChooser = new DirectoryChooser();
-        File selectedDirectory =
-                directoryChooser.showDialog(stage);
-
-        if(selectedDirectory != null){
-            trackNumbersDestination.setText(selectedDirectory.getAbsolutePath());
-            fillSettingsModel();
-        }
-    }
 
     private void fillSettingsModel() {
         settings.setMagento2AccessToken(magentoAccessTokenLabel.getText());
@@ -384,7 +371,6 @@ public class SettingsController extends AbstractController {
 
         settings.setInternetmarkeDestination(internetmarkeDestination.getText());
         settings.setInvoiceDestination(invoiceDestination.getText());
-        settings.setTrackNumbersDestination(trackNumbersDestination.getText());
 
     }
 

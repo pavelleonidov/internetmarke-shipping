@@ -261,9 +261,9 @@ public class MainController extends AbstractController {
                         PrinterService.getInstance().printDocument(document, isInternational, hasCompanyName, "Printing Internetmarke for order " + orderId);
                         walletBalance.setText(InternetmarkeService.getInstance().getFormattedWalletBalance());
 
-                        System.out.println("Main TrackId: " + internetmarkeProduct.getTrackId());
+                        // System.out.println("Main TrackId: " + internetmarkeProduct.getTrackId());
                         if(StringUtils.isNotBlank(internetmarkeProduct.getTrackId())) {
-                            System.out.println(internetmarkeProduct.getTrackId());
+                            // System.out.println(internetmarkeProduct.getTrackId());
 
                             // Track id / Voucher ID of given ProdWS product
                             item.getValue().setTrackId(internetmarkeProduct.getTrackId());
@@ -352,14 +352,19 @@ public class MainController extends AbstractController {
                 shipBody.setNotify(Boolean.TRUE);
 
 
-                if(StringUtils.isNotBlank(item.getValue().getTrackId().getValue()) && item.getValue().isTrackingPossible().getValue().equals("Yes")) {
-                    io.swagger.client.model.SalesDataShipmentTrackCreationInterface trackItem = new io.swagger.client.model.SalesDataShipmentTrackCreationInterface();
+                System.out.println(item.getValue().getTrackId());
 
-                    trackItem.setCarrierCode("deutschepost");
-                    trackItem.setTitle("Deutsche Post");
-                    trackItem.setTrackNumber(item.getValue().getTrackId().getValue());
 
-                    shipBody.addTracksItem(trackItem);
+                if(item.getValue().getTrackId() != null) {
+                    if(StringUtils.isNotBlank(item.getValue().getTrackId().getValue()) && item.getValue().isTrackingPossible().getValue().equals("Yes")) {
+                        io.swagger.client.model.SalesDataShipmentTrackCreationInterface trackItem = new io.swagger.client.model.SalesDataShipmentTrackCreationInterface();
+
+                        trackItem.setCarrierCode("deutschepost");
+                        trackItem.setTitle("Deutsche Post");
+                        trackItem.setTrackNumber(item.getValue().getTrackId().getValue());
+
+                        shipBody.addTracksItem(trackItem);
+                    }
                 }
 
                 try {
@@ -642,9 +647,6 @@ public class MainController extends AbstractController {
                 }
 
             });
-
-
-
 
             SalesProductList productList = ProdWSSalesProductService.getInstance().getProducts();
 
