@@ -1,6 +1,5 @@
 package de.pavelleonidov.InternetmarkeShipping.service;
 
-import com.sun.xml.internal.ws.fault.ServerSOAPFaultException;
 import de.pavelleonidov.InternetmarkeShipping.controller.SettingsController;
 import de.pavelleonidov.InternetmarkeShipping.model.Settings;
 import de.pavelleonidov.InternetmarkeShipping.model.internetmarke.OrderedProduct;
@@ -119,9 +118,6 @@ public class InternetmarkeService {
                     System.out.println(authenticationResponse.getInfoMessage());
                 } catch (AuthenticateUserException_Exception e) {
                     e.printStackTrace();
-                    userToken = "";
-                } catch (ServerSOAPFaultException f) {
-                    f.printStackTrace();
                     userToken = "";
                 }
             } else {
