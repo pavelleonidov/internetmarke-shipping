@@ -28,9 +28,8 @@ import io.swagger.client.api.CustomerAddressRepositoryV1Api;
 import io.swagger.client.api.SalesOrderManagementV1Api;
 import io.swagger.client.api.SalesRefundOrderV1Api;
 import io.swagger.client.api.SalesShipOrderV1Api;
-import io.swagger.client.model.Body95;
-import io.swagger.client.model.Body99;
 import io.swagger.client.model.SalesDataCreditmemoItemCreationInterface;
+import io.swagger.client.model.SalesShipOrderV1ExecutePostBody;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ChangeListener;
@@ -348,11 +347,8 @@ public class MainController extends AbstractController {
                 io.swagger.client.model.SalesDataOrderInterface magentoOrder = item.getValue().getResponseOrder();
                 io.swagger.client.model.SalesDataOrderAddressInterface address = magentoOrder.getExtensionAttributes().getShippingAssignments().get(0).getShipping().getAddress();
 
-                io.swagger.client.model.Body99 shipBody = new Body99();
+                io.swagger.client.model.SalesShipOrderV1ExecutePostBody shipBody = new SalesShipOrderV1ExecutePostBody();
                 shipBody.setNotify(Boolean.TRUE);
-
-
-                System.out.println(item.getValue().getTrackId());
 
 
                 if(item.getValue().getTrackId() != null) {
@@ -470,8 +466,8 @@ public class MainController extends AbstractController {
             salesRefundOrder.getApiClient().setAccessToken(SettingsController.getSettings().getMagento2AccessToken());
             salesRefundOrder.getApiClient().setBasePath(SettingsController.getSettings().getMagento2ApiUrl());
             salesRefundOrder.getApiClient().getHttpClient().setReadTimeout(30, TimeUnit.SECONDS);
-
-            io.swagger.client.model.Body95 refundBody = new Body95();
+            
+            io.swagger.client.model.SalesRefundOrderV1ExecutePostBody refundBody = new io.swagger.client.model.SalesRefundOrderV1ExecutePostBody();
 
             currentOrder.getItems().forEach(item -> {
                 io.swagger.client.model.SalesDataCreditmemoItemCreationInterface memoItem = new SalesDataCreditmemoItemCreationInterface();
@@ -715,10 +711,6 @@ public class MainController extends AbstractController {
                             }
 
                             if(lastExecution == null) {
-
-
-
-
                                 orders = orderApi.salesOrderRepositoryV1GetListGet(
                                         "status",
                                         "processing",

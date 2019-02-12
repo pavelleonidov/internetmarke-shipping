@@ -6,10 +6,11 @@ import de.felixroske.jfxsupport.FXMLController;
 import de.pavelleonidov.InternetmarkeShipping.Main;
 import io.swagger.client.ApiException;
 import io.swagger.client.api.SalesOrderAddressRepositoryV1Api;
-import io.swagger.client.model.Body4;
+
 import io.swagger.client.model.CustomerDataAddressInterface;
 import io.swagger.client.model.CustomerDataCustomerInterface;
 import io.swagger.client.model.SalesDataOrderAddressInterface;
+import io.swagger.client.model.SalesOrderRepositoryV1SavePutBody;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 
@@ -68,9 +69,7 @@ public class CustomerAddressController {
         io.swagger.client.model.SalesDataOrderInterface currentOrder =  MainController.getCurrentOrder().get();
         io.swagger.client.model.SalesDataOrderAddressInterface address = currentOrder.getExtensionAttributes().getShippingAssignments().get(0).getShipping().getAddress();
 
-
-
-        io.swagger.client.model.Body88 attributes = new io.swagger.client.model.Body88();
+        io.swagger.client.model.SalesOrderAddressRepositoryV1SavePutBody attributes = new io.swagger.client.model.SalesOrderAddressRepositoryV1SavePutBody();
 
       //  io.swagger.client.model.CustomerDataAddressInterface customerAddress = new CustomerDataAddressInterface();
 
@@ -95,7 +94,6 @@ public class CustomerAddressController {
         shippingAddress.setVatRequestDate(address.getVatRequestDate());
         shippingAddress.setVatRequestId(address.getVatRequestId());
         shippingAddress.setVatRequestSuccess(address.getVatRequestSuccess());
-
 
         attributes.setEntity(shippingAddress);
 
